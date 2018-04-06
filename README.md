@@ -1,5 +1,5 @@
 # KeePassSubsetExport 
-KeePassSubsetExport is a [KeePass2](https://keepass.info) plugin which automatically exports a subset of entries (tag based) to new databases (with different keys).
+KeePassSubsetExport is a [KeePass2](https://keepass.info) plugin which automatically exports a subset of entries (tag based) to new databases with different keys.
 
 ## Why?
 I'm using the plugin to export some entries of my main database to another database which is [synced](https://syncthing.net) to my mobile devices.
@@ -17,7 +17,7 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 
 ## How to use?
 - Open the database containing the entries that should be exported
-- Create a folder ´SubsetExportSettings´ under the root folder
+- Create a folder `SubsetExportSettings` under the root folder
 - For each export job (target database) create a new entry:
   - set `Title` = `SubsetExport_MobilePhone`
   - set `Password` = The password for the target database
