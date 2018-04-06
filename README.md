@@ -22,10 +22,10 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
   - set `Title` = `SubsetExport_MobilePhone`
   - set `Password` = The password for the target database
   (optional if `SubsetExport_KeyFilePath` is set)
-  - add a string filed with the name `SubsetExport_KeyFilePath` and set a key file for target database (e.g. `C:\keys\mobile.key`)
+  - add a string field with the name `SubsetExport_KeyFilePath` and set a key file for target database (e.g. `C:\keys\mobile.key`)
   (optional if `Password` is set)
-  - add a string filed with the name `SubsetExport_TargetFilePath` and set a target database (e.g. `C:\sync\mobile.kdbx`)
-  - add a string filed with the name `SubsetExport_Tag` and set the tag that should be exported (e.g. `MobileSync`)
+  - add a string field with the name `SubsetExport_TargetFilePath` and set a target database (e.g. `C:\sync\mobile.kdbx`)
+  - add a string field with the name `SubsetExport_Tag` and set the tag that should be exported (e.g. `MobileSync`)
 - Every time the (source) database is saved the target databases will be recreated automatically
 
 ![create](https://user-images.githubusercontent.com/5115160/38439682-da51a266-39de-11e8-9cc4-744d5a3f0dae.png)
