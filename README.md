@@ -29,3 +29,10 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 - Every time the (source) database is saved the target databases will be recreated automatically
 
 ![create](https://user-images.githubusercontent.com/5115160/38439682-da51a266-39de-11e8-9cc4-744d5a3f0dae.png)
+
+## KeePassSubsetExport vs Partial KeePass Database Export
+I started developting KeePassSubsetExport before [Partial KeePass Database Export](https://github.com/heinrich-ulbricht/partial-keepass-database-export) was published, so the basic functionality is similar.  
+But KeePassSubsetExport has some advantages:
+- The folder structure is copied to the target database
+- Multiple export jobs are supported
+- Key-File protection of the target databases is supported
