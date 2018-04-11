@@ -191,6 +191,24 @@ namespace KeePassSubsetExport
                 peNew.Uuid = entry.Uuid;
                 peNew.AssignProperties(entry, false, true, true);
 
+                // Does the entry use a custom icon?
+                if (!entry.CustomIconUuid.Equals(PwUuid.Zero))
+                {
+                    // Check if the custom icon really is in the source database
+                    int iconIndex = sourceDb.GetCustomIconIndex(entry.CustomIconUuid);
+                    if (iconIndex < 0 || iconIndex > sourceDb.CustomIcons.Count - 1)
+                    {
+                        MessageService.ShowWarning("Can't locate custom icon (" + entry.CustomIconUuid.ToHexString() + ") for entry " + entry.Strings.ReadSafe("Title"));
+                        continue;
+                    }
+
+                    // Get the custom icon from the source database
+                    PwCustomIcon customIcon = sourceDb.CustomIcons[iconIndex];
+
+                    // Copy the custom icon to the target database
+                    targetDatabase.CustomIcons.Add(customIcon);
+                }
+
                 // Add entry to the target group in the new database
                 targetGroup.AddEntry(peNew, true);
             }
