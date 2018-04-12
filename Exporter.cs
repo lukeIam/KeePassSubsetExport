@@ -173,8 +173,9 @@ namespace KeePassSubsetExport
             targetDatabase.Name = sourceDb.Name;
             targetDatabase.RecycleBinEnabled = sourceDb.RecycleBinEnabled;
 
-            // Copy the root group name
-            targetDatabase.RootGroup.Name = sourceDb.RootGroup.Name;
+            // Assign the properties of the source root group to the target root group
+            targetDatabase.RootGroup.AssignProperties(sourceDb.RootGroup, false, true);
+            HandleCustomIcon(targetDatabase, sourceDb, sourceDb.RootGroup);
 
             // Find all entries matching the tag
             PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
@@ -184,7 +185,7 @@ namespace KeePassSubsetExport
             foreach (PwEntry entry in entries)
             {
                 // Get or create the target group in the target database (including hierarchy)
-                PwGroup targetGroup = CreateTargetGroupInDatebase(entry, targetDatabase);
+                PwGroup targetGroup = CreateTargetGroupInDatebase(entry, targetDatabase, sourceDb);
 
                 // Clone entry
                 PwEntry peNew = new PwEntry(false, false);
@@ -218,16 +219,17 @@ namespace KeePassSubsetExport
         /// </summary>
         /// <param name="entry">An entry wich is located in the folder with the target structure.</param>
         /// <param name="targetDatabase">The target database in which the folder structure should be created.</param>
+        /// <param name="sourceDatabase">The source database from which the folder properties should be taken.</param>
         /// <returns>The target folder in the target database.</returns>
-        private static PwGroup CreateTargetGroupInDatebase(PwEntry entry, PwDatabase targetDatabase)
+        private static PwGroup CreateTargetGroupInDatebase(PwEntry entry, PwDatabase targetDatabase, PwDatabase sourceDatabase)
         {
             // Collect all group names from the entry up to the root group
             PwGroup group = entry.ParentGroup;
-            List<string> list = new List<string>();
+            List<PwUuid> list = new List<PwUuid>();
 
             while (group != null)
             {
-                list.Add(group.Name);
+                list.Add(group.Uuid);
                 group = group.ParentGroup;
             }
 
@@ -236,17 +238,64 @@ namespace KeePassSubsetExport
             // groups are in a bottom-up oder -> reverse to get top-down
             list.Reverse();
 
-            // Create a string representing the folder structure for FindCreateSubTree()
-            string groupPath = string.Join("/", list.ToArray());
-
-            // Find the leaf folder or create it including hierarchical folder structure
-            PwGroup targetGroup = targetDatabase.RootGroup.FindCreateSubTree(groupPath, new char[]
+            // Create group structure for the new entry (copying group properties)
+            PwGroup lastGroup = targetDatabase.RootGroup;
+            foreach (PwUuid id in list)
             {
-                '/'
-            });
+                // Does the target group already exist?
+                PwGroup newGroup = lastGroup.FindGroup(id, false);
+                if (newGroup != null)
+                {
+                    lastGroup = newGroup;
+                    continue;
+                }
+
+                // Get the source group
+                PwGroup sourceGroup = sourceDatabase.RootGroup.FindGroup(id, true);
+
+                // Create a new group and asign all properties from the source group
+                newGroup = new PwGroup();
+                newGroup.AssignProperties(sourceGroup, false, true);
+                HandleCustomIcon(targetDatabase, sourceDatabase, sourceGroup);
+
+                // Add the new group at the right position in the target database
+                lastGroup.AddGroup(newGroup, true);
+
+                lastGroup = newGroup;
+            }
 
             // Return the target folder (leaf folder)
-            return targetGroup;
+            return lastGroup;
+        }
+
+        /// <summary>
+        /// Copies the custom icons required for this group to the target database.
+        /// </summary>
+        /// <param name="targetDatabase">The target database where to add the icons.</param>
+        /// <param name="sourceDatabase">The source database where to get the icons from.</param>
+        /// <param name="sourceGroup">The source group which icon should be copied (if it is custom).</param>
+        private static void HandleCustomIcon(PwDatabase targetDatabase, PwDatabase sourceDatabase, PwGroup sourceGroup)
+        {
+            // Does the group not use a custom icon or it's already in the target database
+            if (sourceGroup.CustomIconUuid.Equals(PwUuid.Zero) ||
+                targetDatabase.GetCustomIconIndex(sourceGroup.CustomIconUuid) != -1)
+            {
+                return;
+            }
+
+            // Check if the custom icon really is in the source database
+            int iconIndex = sourceDatabase.GetCustomIconIndex(sourceGroup.CustomIconUuid);
+            if (iconIndex < 0 || iconIndex > sourceDatabase.CustomIcons.Count - 1)
+            {
+                MessageService.ShowWarning("Can't locate custom icon (" + sourceGroup.CustomIconUuid.ToHexString() +
+                                           ") for group " + sourceGroup.Name);
+            }
+
+            // Get the custom icon from the source database
+            PwCustomIcon customIcon = sourceDatabase.CustomIcons[iconIndex];
+
+            // Copy the custom icon to the target database
+            targetDatabase.CustomIcons.Add(customIcon);
         }
     }
 }
