@@ -6,7 +6,7 @@ I'm using the plugin to export some entries of my main database to another datab
 Additionally, I'm sharing some other entries with my family.
 
 ## Disclaimer
-This is my first KeePass plugin and I'm tried not to compromise security - but I can't guarantee it.  
+This is my first KeePass plugin and I tried not to compromise security - but I can't guarantee it.  
 **So use this plugin at your own risk.**  
 If you have more experience with KeePass plugins, I would be very grateful if you have a look on the code.
 
