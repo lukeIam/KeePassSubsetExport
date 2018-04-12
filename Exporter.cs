@@ -191,8 +191,8 @@ namespace KeePassSubsetExport
                 peNew.Uuid = entry.Uuid;
                 peNew.AssignProperties(entry, false, true, true);
 
-                // Does the entry use a custom icon?
-                if (!entry.CustomIconUuid.Equals(PwUuid.Zero))
+                // Does the entry use a custom icon and its not in already in the target database
+                if (!entry.CustomIconUuid.Equals(PwUuid.Zero)  && targetDatabase.GetCustomIconIndex(entry.CustomIconUuid) == -1)
                 {
                     // Check if the custom icon really is in the source database
                     int iconIndex = sourceDb.GetCustomIconIndex(entry.CustomIconUuid);
