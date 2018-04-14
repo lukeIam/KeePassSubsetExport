@@ -6,7 +6,7 @@ I'm using the plugin to export some entries of my main database to another datab
 Additionally, I'm sharing some other entries with my family.
 
 ## Disclaimer
-This is my first KeePass plugin and I'm tried not to compromise security - but I can't guarantee it.  
+This is my first KeePass plugin and I tried not to compromise security - but I can't guarantee it.  
 **So use this plugin at your own risk.**  
 If you have more experience with KeePass plugins, I would be very grateful if you have a look on the code.
 
@@ -22,12 +22,19 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
   - set `Title` = `SubsetExport_MobilePhone`
   - set `Password` = The password for the target database
   (optional if `SubsetExport_KeyFilePath` is set)
-  - add a string filed with the name `SubsetExport_KeyFilePath` and set a key file for target database (e.g. `C:\keys\mobile.key`)
+  - add a string field with the name `SubsetExport_KeyFilePath` and set a key file for target database (e.g. `C:\keys\mobile.key`)
   (optional if `Password` is set)
-  - add a string filed with the name `SubsetExport_TargetFilePath` and set a target database (e.g. `C:\sync\mobile.kdbx`)
-  - add a string filed with the name `SubsetExport_Tag` and set the tag that should be exported (e.g. `MobileSync`)
+  - add a string field with the name `SubsetExport_TargetFilePath` and set a target database (e.g. `C:\sync\mobile.kdbx`)
+  - add a string field with the name `SubsetExport_Tag` and set the tag that should be exported (e.g. `MobileSync`)
   - add a string field with the name `SubsetExport_KeyTransformationRounds` and set the number of KeyTransformationRounds for the target database (e.g. `10000000`)
   (optional - if not set the value of the source database is used)
 - Every time the (source) database is saved the target databases will be recreated automatically
 
 ![create](https://user-images.githubusercontent.com/5115160/38439682-da51a266-39de-11e8-9cc4-744d5a3f0dae.png)
+
+## KeePassSubsetExport vs Partial KeePass Database Export
+I started developing KeePassSubsetExport before [Partial KeePass Database Export](https://github.com/heinrich-ulbricht/partial-keepass-database-export) was published, so the basic functionality is similar.  
+But KeePassSubsetExport has some advantages:
+- The folder structure is copied to the target database
+- Multiple export jobs are supported
+- Key-File protection of the target databases is supported
