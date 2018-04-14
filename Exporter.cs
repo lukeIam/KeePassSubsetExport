@@ -192,23 +192,8 @@ namespace KeePassSubsetExport
                 peNew.Uuid = entry.Uuid;
                 peNew.AssignProperties(entry, false, true, true);
 
-                // Does the entry use a custom icon and its not in already in the target database
-                if (!entry.CustomIconUuid.Equals(PwUuid.Zero)  && targetDatabase.GetCustomIconIndex(entry.CustomIconUuid) == -1)
-                {
-                    // Check if the custom icon really is in the source database
-                    int iconIndex = sourceDb.GetCustomIconIndex(entry.CustomIconUuid);
-                    if (iconIndex < 0 || iconIndex > sourceDb.CustomIcons.Count - 1)
-                    {
-                        MessageService.ShowWarning("Can't locate custom icon (" + entry.CustomIconUuid.ToHexString() + ") for entry " + entry.Strings.ReadSafe("Title"));
-                        continue;
-                    }
-
-                    // Get the custom icon from the source database
-                    PwCustomIcon customIcon = sourceDb.CustomIcons[iconIndex];
-
-                    // Copy the custom icon to the target database
-                    targetDatabase.CustomIcons.Add(customIcon);
-                }
+                // Handle custom icon
+                HandleCustomIcon(targetDatabase, sourceDb, entry);
 
                 // Add entry to the target group in the new database
                 targetGroup.AddEntry(peNew, true);
@@ -294,7 +279,7 @@ namespace KeePassSubsetExport
         /// <param name="sourceGroup">The source group which icon should be copied (if it is custom).</param>
         private static void HandleCustomIcon(PwDatabase targetDatabase, PwDatabase sourceDatabase, PwGroup sourceGroup)
         {
-            // Does the group not use a custom icon or it's already in the target database
+            // Does the group not use a custom icon or is it already in the target database
             if (sourceGroup.CustomIconUuid.Equals(PwUuid.Zero) ||
                 targetDatabase.GetCustomIconIndex(sourceGroup.CustomIconUuid) != -1)
             {
@@ -311,6 +296,36 @@ namespace KeePassSubsetExport
 
             // Get the custom icon from the source database
             PwCustomIcon customIcon = sourceDatabase.CustomIcons[iconIndex];
+
+            // Copy the custom icon to the target database
+            targetDatabase.CustomIcons.Add(customIcon);
+        }
+
+        /// <summary>
+        /// Copies the custom icons required for this group to the target database.
+        /// </summary>
+        /// <param name="targetDatabase">The target database where to add the icons.</param>
+        /// <param name="sourceDb">The source database where to get the icons from.</param>
+        /// <param name="entry">The entry which icon should be copied (if it is custom).</param>
+        private static void HandleCustomIcon(PwDatabase targetDatabase, PwDatabase sourceDb, PwEntry entry)
+        {
+            // Does the entry not use a custom icon or is it already in the target database
+            if (entry.CustomIconUuid.Equals(PwUuid.Zero) ||
+                targetDatabase.GetCustomIconIndex(entry.CustomIconUuid) != -1)
+            {
+                return;
+            }
+
+            // Check if the custom icon really is in the source database
+            int iconIndex = sourceDb.GetCustomIconIndex(entry.CustomIconUuid);
+            if (iconIndex < 0 || iconIndex > sourceDb.CustomIcons.Count - 1)
+            {
+                MessageService.ShowWarning("Can't locate custom icon (" + entry.CustomIconUuid.ToHexString() +
+                                           ") for entry " + entry.Strings.ReadSafe("Title"));
+            }
+
+            // Get the custom icon from the source database
+            PwCustomIcon customIcon = sourceDb.CustomIcons[iconIndex];
 
             // Copy the custom icon to the target database
             targetDatabase.CustomIcons.Add(customIcon);
