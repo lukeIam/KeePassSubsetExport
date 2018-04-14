@@ -26,6 +26,8 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
   (optional if `Password` is set)
   - add a string filed with the name `SubsetExport_TargetFilePath` and set a target database (e.g. `C:\sync\mobile.kdbx`)
   - add a string filed with the name `SubsetExport_Tag` and set the tag that should be exported (e.g. `MobileSync`)
+  - add a string field with the name `SubsetExport_KeyTransformationRounds` and set the number of KeyTransformationRounds for the target database (e.g. `10000000`)
+  (optional - if not set the value of the source database is used)
 - Every time the (source) database is saved the target databases will be recreated automatically
 
 ![create](https://user-images.githubusercontent.com/5115160/38439682-da51a266-39de-11e8-9cc4-744d5a3f0dae.png)

@@ -6,6 +6,7 @@ using KeePass;
 using KeePass.Resources;
 using KeePassLib;
 using KeePassLib.Collections;
+using KeePassLib.Cryptography.KeyDerivation;
 using KeePassLib.Interfaces;
 using KeePassLib.Keys;
 using KeePassLib.Security;
@@ -46,11 +47,21 @@ namespace KeePassSubsetExport
                 string targetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath");
                 string keyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath");
                 string tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag");
+                string keyTransformationRoundsString = settingsEntry.Strings.ReadSafe("SubsetExport_KeyTransformationRounds");
 
                 // If a key file is given it must exist.
                 if (!string.IsNullOrEmpty(keyFilePath) && !File.Exists(keyFilePath))
                 {
                     MessageService.ShowWarning("SubsetExport: Keyfile is given but could not be found for: " +
+                                               settingsEntry.Strings.ReadSafe("Title"), keyFilePath);
+                    continue;
+                }
+
+                // If keyTransformationRounds are given it must be an integer.
+                ulong keyTransformationRounds = 0;
+                if (!string.IsNullOrEmpty(keyTransformationRoundsString) && !ulong.TryParse(keyTransformationRoundsString.Trim(), out keyTransformationRounds))
+                {
+                    MessageService.ShowWarning("SubsetExport: keyTransformationRounds is given but can not be parsed as integer for: " +
                                                settingsEntry.Strings.ReadSafe("Title"), keyFilePath);
                     continue;
                 }
@@ -66,7 +77,7 @@ namespace KeePassSubsetExport
                 try
                 {
                     // Execute the export 
-                    CopyToNewDb(sourceDb, targetFilePath, password, keyFilePath, tag);
+                    CopyToNewDb(sourceDb, targetFilePath, password, keyFilePath, tag, keyTransformationRounds);
                 }
                 catch (Exception e)
                 {
@@ -82,8 +93,9 @@ namespace KeePassSubsetExport
         /// <param name="targetFilePath">The path for the target database.</param>
         /// <param name="password">The password to protect the target database(optional if <para>keyFilePath</para> is set).</param>
         /// <param name="keyFilePath">The path to a key file to protect the target database (optional if <para>password</para> is set).</param>
-        /// <param name="tag"></param>
-        private static void CopyToNewDb(PwDatabase sourceDb, string targetFilePath, ProtectedString password, string keyFilePath, string tag)
+        /// <param name="tag">Tag to export.</param>
+        /// <param name="keyTransformationRounds">The keyTransformationRounds setting for the target database.</param>
+        private static void CopyToNewDb(PwDatabase sourceDb, string targetFilePath, ProtectedString password, string keyFilePath, string tag, ulong keyTransformationRounds)
         {
             // Create a key for the target database
             CompositeKey key = new CompositeKey();
@@ -172,6 +184,15 @@ namespace KeePassSubsetExport
             targetDatabase.MasterKeyChangeRec = sourceDb.MasterKeyChangeRec;
             targetDatabase.Name = sourceDb.Name;
             targetDatabase.RecycleBinEnabled = sourceDb.RecycleBinEnabled;
+            
+            if (keyTransformationRounds == 0)
+            {
+                // keyTransformationRounds was not set -> use the one from the source database
+                keyTransformationRounds = sourceDb.KdfParameters.GetUInt64(AesKdf.ParamRounds, 0);
+            }
+
+            // Set keyTransformationRounds (min PwDefs.DefaultKeyEncryptionRounds)
+            targetDatabase.KdfParameters.SetUInt64(AesKdf.ParamRounds, Math.Max(PwDefs.DefaultKeyEncryptionRounds, keyTransformationRounds));
 
             // Assign the properties of the source root group to the target root group
             targetDatabase.RootGroup.AssignProperties(sourceDb.RootGroup, false, true);
