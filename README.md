@@ -38,3 +38,4 @@ But KeePassSubsetExport has some advantages:
 - The folder structure is copied to the target database
 - Multiple export jobs are supported
 - Key-File protection of the target databases is supported
+- KeyTransformationRounds of the target database is set to the number of the source database (can be overwritten)
