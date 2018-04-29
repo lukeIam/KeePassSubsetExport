@@ -63,10 +63,26 @@ namespace KeePassSubsetExport
                 }
                 settings.KeyTransformationRounds = keyTransformationRounds;
 
-                // Require at least targetFilePath, tag and at least one of password or keyFilePath.
-                if (string.IsNullOrEmpty(settings.TargetFilePath) || string.IsNullOrEmpty(settings.Tag) || (settings.Password.IsEmpty && !File.Exists(settings.KeyFilePath)))
+                // Require at least one of Tag or Group
+                if (string.IsNullOrEmpty(settings.Tag) && string.IsNullOrEmpty(settings.Group))
                 {
-                    MessageService.ShowWarning("SubsetExport: Missing settings for: " +
+                    MessageService.ShowWarning("SubsetExport: Missing Tag or Group for: " +
+                                               settingsEntry.Strings.ReadSafe("Title"));
+                    continue;
+                }
+
+                // Require targetFilePath and at least one of password or keyFilePath.
+                if (string.IsNullOrEmpty(settings.TargetFilePath))
+                {
+                    MessageService.ShowWarning("SubsetExport: Missing TargetFilePath for: " +
+                                               settingsEntry.Strings.ReadSafe("Title"));
+                    continue;
+                }
+
+                // Require at least one of Password or KeyFilePath.
+                if (settings.Password.IsEmpty && !File.Exists(settings.KeyFilePath))
+                {
+                    MessageService.ShowWarning("SubsetExport: Missing Password or valid KeyFilePath for: " +
                                                settingsEntry.Strings.ReadSafe("Title"));
                     continue;
                 }
@@ -199,7 +215,41 @@ namespace KeePassSubsetExport
 
             // Find all entries matching the tag
             PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
-            sourceDb.RootGroup.FindEntriesByTag(settings.Tag, entries, true);
+
+            if (!string.IsNullOrEmpty(settings.Tag) && string.IsNullOrEmpty(settings.Group))
+            {
+                // Tag only export
+                sourceDb.RootGroup.FindEntriesByTag(settings.Tag, entries, true);
+            }
+            else if (string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
+            {
+                // Tag and group export
+                PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == settings.Group);
+
+                if (groupToExport == null)
+                {
+                    throw new ArgumentException("No group with the name of the Group-Setting found.");
+                }
+
+                entries = groupToExport.GetEntries(true);
+            }
+            else if (!string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
+            {
+                // Tag and group export
+                PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == settings.Group);
+                
+                if (groupToExport == null)
+                {
+                    throw new ArgumentException("No group with the name of the Group-Setting found.");
+                }
+                
+                groupToExport.FindEntriesByTag(settings.Tag, entries, true);
+            }
+            else
+            {
+                throw new ArgumentException("At least one of Tag or ExportFolderName must be set.");
+            }
+
 
             // Copy all entries to the new database
             foreach (PwEntry entry in entries)
