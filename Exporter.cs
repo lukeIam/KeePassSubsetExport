@@ -43,31 +43,28 @@ namespace KeePassSubsetExport
             foreach (var settingsEntry in jobSettings)
             {
                 // Load settings for this job
-                ProtectedString password = settingsEntry.Strings.GetSafe("Password");
-                string targetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath");
-                string keyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath");
-                string tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag");
-                string keyTransformationRoundsString = settingsEntry.Strings.ReadSafe("SubsetExport_KeyTransformationRounds");
+                var settings = Settings.Parse(settingsEntry);
 
                 // If a key file is given it must exist.
-                if (!string.IsNullOrEmpty(keyFilePath) && !File.Exists(keyFilePath))
+                if (!string.IsNullOrEmpty(settings.KeyFilePath) && !File.Exists(settings.KeyFilePath))
                 {
                     MessageService.ShowWarning("SubsetExport: Keyfile is given but could not be found for: " +
-                                               settingsEntry.Strings.ReadSafe("Title"), keyFilePath);
+                                               settingsEntry.Strings.ReadSafe("Title"), settings.KeyFilePath);
                     continue;
                 }
 
                 // If keyTransformationRounds are given it must be an integer.
                 ulong keyTransformationRounds = 0;
-                if (!string.IsNullOrEmpty(keyTransformationRoundsString) && !ulong.TryParse(keyTransformationRoundsString.Trim(), out keyTransformationRounds))
+                if (!string.IsNullOrEmpty(settings.KeyTransformationRoundsString) && !ulong.TryParse(settings.KeyTransformationRoundsString.Trim(), out keyTransformationRounds))
                 {
                     MessageService.ShowWarning("SubsetExport: keyTransformationRounds is given but can not be parsed as integer for: " +
-                                               settingsEntry.Strings.ReadSafe("Title"), keyFilePath);
+                                               settingsEntry.Strings.ReadSafe("Title"), settings.KeyFilePath);
                     continue;
                 }
+                settings.KeyTransformationRounds = keyTransformationRounds;
 
                 // Require at least targetFilePath, tag and at least one of password or keyFilePath.
-                if (string.IsNullOrEmpty(targetFilePath) || string.IsNullOrEmpty(tag) || (password.IsEmpty && !File.Exists(keyFilePath)))
+                if (string.IsNullOrEmpty(settings.TargetFilePath) || string.IsNullOrEmpty(settings.Tag) || (settings.Password.IsEmpty && !File.Exists(settings.KeyFilePath)))
                 {
                     MessageService.ShowWarning("SubsetExport: Missing settings for: " +
                                                settingsEntry.Strings.ReadSafe("Title"));
@@ -77,7 +74,7 @@ namespace KeePassSubsetExport
                 try
                 {
                     // Execute the export 
-                    CopyToNewDb(sourceDb, targetFilePath, password, keyFilePath, tag, keyTransformationRounds);
+                    CopyToNewDb(sourceDb, settings);
                 }
                 catch (Exception e)
                 {
@@ -90,12 +87,8 @@ namespace KeePassSubsetExport
         /// Exports all entries with the given tag to a new database at the given path.
         /// </summary>
         /// <param name="sourceDb">The source database.</param>
-        /// <param name="targetFilePath">The path for the target database.</param>
-        /// <param name="password">The password to protect the target database(optional if <para>keyFilePath</para> is set).</param>
-        /// <param name="keyFilePath">The path to a key file to protect the target database (optional if <para>password</para> is set).</param>
-        /// <param name="tag">Tag to export.</param>
-        /// <param name="keyTransformationRounds">The keyTransformationRounds setting for the target database.</param>
-        private static void CopyToNewDb(PwDatabase sourceDb, string targetFilePath, ProtectedString password, string keyFilePath, string tag, ulong keyTransformationRounds)
+        /// <param name="settings">The settings for this job.</param>
+        private static void CopyToNewDb(PwDatabase sourceDb, Settings settings)
         {
             // Create a key for the target database
             CompositeKey key = new CompositeKey();
@@ -103,33 +96,33 @@ namespace KeePassSubsetExport
             bool hasPassword = false;
             bool hasKeyFile = false;
 
-            if (!password.IsEmpty)
+            if (!settings.Password.IsEmpty)
             {
-                byte[] passwordByteArray = password.ReadUtf8();
+                byte[] passwordByteArray = settings.Password.ReadUtf8();
                 key.AddUserKey(new KcpPassword(passwordByteArray));
                 MemUtil.ZeroByteArray(passwordByteArray);
                 hasPassword = true;
             }
 
             // Load a keyfile for the target database if requested (and add it to the key)
-            if (!string.IsNullOrEmpty(keyFilePath))
+            if (!string.IsNullOrEmpty(settings.KeyFilePath))
             {
-                bool bIsKeyProv = Program.KeyProviderPool.IsKeyProvider(keyFilePath);
+                bool bIsKeyProv = Program.KeyProviderPool.IsKeyProvider(settings.KeyFilePath);
 
                 if (!bIsKeyProv)
                 {
                     try
                     {
-                        key.AddUserKey(new KcpKeyFile(keyFilePath, true));
+                        key.AddUserKey(new KcpKeyFile(settings.KeyFilePath, true));
                         hasKeyFile = true;
                     }
                     catch (InvalidDataException exId)
                     {
-                        MessageService.ShowWarning(keyFilePath, exId);
+                        MessageService.ShowWarning(settings.KeyFilePath, exId);
                     }
                     catch (Exception exKf)
                     {
-                        MessageService.ShowWarning(keyFilePath, KPRes.KeyFileError, exKf);
+                        MessageService.ShowWarning(settings.KeyFilePath, KPRes.KeyFileError, exKf);
                     }
                 }
                 else
@@ -137,7 +130,7 @@ namespace KeePassSubsetExport
                     KeyProviderQueryContext ctxKp = new KeyProviderQueryContext(
                         ConnectionInfo, true, false);
 
-                    KeyProvider prov = Program.KeyProviderPool.Get(keyFilePath);
+                    KeyProvider prov = Program.KeyProviderPool.Get(settings.KeyFilePath);
                     bool bPerformHash = !prov.DirectKey;
                     byte[] pbCustomKey = prov.GetKey(ctxKp);
 
@@ -145,7 +138,7 @@ namespace KeePassSubsetExport
                     {
                         try
                         {
-                            key.AddUserKey(new KcpCustomKey(keyFilePath, pbCustomKey, bPerformHash));
+                            key.AddUserKey(new KcpCustomKey(settings.KeyFilePath, pbCustomKey, bPerformHash));
                             hasKeyFile = true;
                         }
                         catch (Exception exCkp)
@@ -185,22 +178,28 @@ namespace KeePassSubsetExport
             targetDatabase.Name = sourceDb.Name;
             targetDatabase.RecycleBinEnabled = sourceDb.RecycleBinEnabled;
             
-            if (keyTransformationRounds == 0)
+            if (settings.KeyTransformationRounds == 0)
             {
                 // keyTransformationRounds was not set -> use the one from the source database
-                keyTransformationRounds = sourceDb.KdfParameters.GetUInt64(AesKdf.ParamRounds, 0);
+                settings.KeyTransformationRounds = sourceDb.KdfParameters.GetUInt64(AesKdf.ParamRounds, 0);
             }
 
             // Set keyTransformationRounds (min PwDefs.DefaultKeyEncryptionRounds)
-            targetDatabase.KdfParameters.SetUInt64(AesKdf.ParamRounds, Math.Max(PwDefs.DefaultKeyEncryptionRounds, keyTransformationRounds));
-
+            targetDatabase.KdfParameters.SetUInt64(AesKdf.ParamRounds, Math.Max(PwDefs.DefaultKeyEncryptionRounds, settings.KeyTransformationRounds));
+            
             // Assign the properties of the source root group to the target root group
             targetDatabase.RootGroup.AssignProperties(sourceDb.RootGroup, false, true);
             HandleCustomIcon(targetDatabase, sourceDb, sourceDb.RootGroup);
 
+            // Overwrite the root group name if requested
+            if (!string.IsNullOrEmpty(settings.RootGroupName))
+            {
+                targetDatabase.RootGroup.Name = settings.RootGroupName;
+            }
+
             // Find all entries matching the tag
             PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
-            sourceDb.RootGroup.FindEntriesByTag(tag, entries, true);
+            sourceDb.RootGroup.FindEntriesByTag(settings.Tag, entries, true);
 
             // Copy all entries to the new database
             foreach (PwEntry entry in entries)
@@ -221,7 +220,7 @@ namespace KeePassSubsetExport
             }
 
             // Create target folder (if not exist)
-            string targetFolder = Path.GetDirectoryName(targetFilePath);
+            string targetFolder = Path.GetDirectoryName(settings.TargetFilePath);
 
             if (targetFolder == null)
             {
@@ -232,7 +231,7 @@ namespace KeePassSubsetExport
             // Save the new database under the target path
             KdbxFile kdbx = new KdbxFile(targetDatabase);
 
-            using (FileStream outputStream = new FileStream(targetFilePath, FileMode.Create))
+            using (FileStream outputStream = new FileStream(settings.TargetFilePath, FileMode.Create))
             {
                 kdbx.Save(outputStream, null, KdbxFormat.Default, new NullStatusLogger());
             }
