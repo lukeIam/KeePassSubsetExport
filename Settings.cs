@@ -9,7 +9,7 @@ namespace KeePassSubsetExport
     public class Settings
     {
         /// <summary>
-        /// The password to protect the target database(optional if <para>keyFilePath</para> is set)
+        /// The password to protect the target database(optional if <see cref="KeyFilePath"/> is set)
         /// </summary>
         public ProtectedString Password { get; private set; }
         /// <summary>
@@ -17,11 +17,11 @@ namespace KeePassSubsetExport
         /// </summary>
         public string TargetFilePath { get; private set; }
         /// <summary>
-        /// The path to a key file to protect the target database (optional if <para>password</para> is set).
+        /// The path to a key file to protect the target database (optional if <see cref="Password"/> is set).
         /// </summary>
         public string KeyFilePath { get; private set; }
         /// <summary>
-        /// Tag to export.
+        /// Tag to export (optional if <see cref="Group"/> is set).
         /// </summary>
         public string Tag { get; private set; }
         /// <summary>
@@ -36,6 +36,10 @@ namespace KeePassSubsetExport
         /// The new name for the root group (optional).
         /// </summary>
         public string RootGroupName { get; private set; }
+        /// <summary>
+        /// The name of the group to export (optional if <see cref="Tag"/> is set).
+        /// </summary>
+        public string Group { get; private set; }
 
         // Private constructor
         private Settings()
@@ -57,6 +61,7 @@ namespace KeePassSubsetExport
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
                 KeyTransformationRoundsString = settingsEntry.Strings.ReadSafe("SubsetExport_KeyTransformationRounds"),
                 RootGroupName = settingsEntry.Strings.ReadSafe("SubsetExport_RootGroupName"),
+                Group = settingsEntry.Strings.ReadSafe("SubsetExport_Group")
             };
         }
     }
