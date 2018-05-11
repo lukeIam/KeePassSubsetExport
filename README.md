@@ -19,15 +19,18 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 - Open the database containing the entries that should be exported
 - Create a folder `SubsetExportSettings` under the root folder
 - For each export job (target database) create a new entry:
-  - set `Title` = `SubsetExport_MobilePhone`
-  - set `Password` = The password for the target database
-  (optional if `SubsetExport_KeyFilePath` is set)
-  - add a string field with the name `SubsetExport_KeyFilePath` and set a key file for target database (e.g. `C:\keys\mobile.key`)
-  (optional if `Password` is set)
-  - add a string field with the name `SubsetExport_TargetFilePath` and set a target database (e.g. `C:\sync\mobile.kdbx`)
-  - add a string field with the name `SubsetExport_Tag` and set the tag that should be exported (e.g. `MobileSync`)
-  - add a string field with the name `SubsetExport_KeyTransformationRounds` and set the number of KeyTransformationRounds for the target database (e.g. `10000000`)
-  (optional - if not set the value of the source database is used)
+
+| Setting                                              | Description                                                             | Optional                                 | Example                               |
+| ---------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------- | ------------------------------------- |
+| `Title`                                                | Name of the job                                                         | No                                       | SubsetExport_MobilePhone              |
+| `Password`                                             | The password for the target database                                    | Yes, if `SubsetExport_KeyFilePath` is set  | SecurePW!                             |
+| `SubsetExport_KeyFilePath`<br>[string field]              | Path to a key file                                                      | Yes, if `Password` is set                  | C:\keys\mobile.key                    |
+| `SubsetExport_TargetFilePath`<br>[string field]           | Path to the target database                                             | No                                       | C:\sync\mobile.kdbx                   |
+| `SubsetExport_Tag`<br>[string field]                      | Tag for filtering                                                       | Yes, if `SubsetExport_Group` is set        | MobileSync                            |
+| `SubsetExport_Group`<br>[string field]                    | Group for filtering                                                     | Yes, if `SubsetExport_Tag` is set          | MobileGroup                           |
+| `SubsetExport_KeyTransformationRounds`<br>[string field]  | Overwrite the number of KeyTransformationRounds for the target database | Yes                                      | 10000000                              |
+| `SubsetExport_RootGroupName`<br>[string field]                           | Overwrite the name of the root group in the target database             | Yes                                      | NewRootGroupName                      |
+
 - Every time the (source) database is saved the target databases will be recreated automatically
 
 ![create](https://user-images.githubusercontent.com/5115160/38439682-da51a266-39de-11e8-9cc4-744d5a3f0dae.png)
@@ -39,3 +42,4 @@ But KeePassSubsetExport has some advantages:
 - Multiple export jobs are supported
 - Key-File protection of the target databases is supported
 - KeyTransformationRounds of the target database is set to the number of the source database (can be overwritten)
+- Exports can be limited to a folder (can be combined with a tag filter)
