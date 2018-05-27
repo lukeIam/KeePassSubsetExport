@@ -269,6 +269,13 @@ namespace KeePassSubsetExport
                 targetGroup.AddEntry(peNew, true);
             }
 
+            // Default to same folder as sourceDb for target if no directory is specified
+            if (!Path.IsPathRooted(settings.TargetFilePath))
+            {
+                string sourceDbPath = Path.GetDirectoryName(sourceDb.IOConnectionInfo.Path);
+                settings.TargetFilePath = Path.Combine(sourceDbPath, settings.TargetFilePath);
+            }
+
             // Create target folder (if not exist)
             string targetFolder = Path.GetDirectoryName(settings.TargetFilePath);
 

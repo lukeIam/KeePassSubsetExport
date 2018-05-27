@@ -15,7 +15,7 @@ namespace KeePassSubsetExport
         /// <summary>
         /// The path for the target database.
         /// </summary>
-        public string TargetFilePath { get; private set; }
+        public string TargetFilePath { get; set; }
         /// <summary>
         /// The path to a key file to protect the target database (optional if <see cref="Password"/> is set).
         /// </summary>
