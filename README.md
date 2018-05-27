@@ -20,16 +20,16 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 - Create a folder `SubsetExportSettings` under the root folder
 - For each export job (target database) create a new entry:
 
-| Setting                                              | Description                                                             | Optional                                 | Example                               |
-| ---------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------- | ------------------------------------- |
-| `Title`                                                | Name of the job                                                         | No                                       | `SubsetExport_MobilePhone`              |
-| `Password`                                             | The password for the target database                                    | Yes, if `SubsetExport_KeyFilePath` is set  | `SecurePW!`                             |
+| Setting                                                   | Description                                                             | Optional                                   | Example                                 |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------- |
+| `Title`                                                   | Name of the job                                                         | No                                         | `SubsetExport_MobilePhone`              |
+| `Password`                                                | The password for the target database                                    | Yes, if `SubsetExport_KeyFilePath` is set  | `SecurePW!`                             |
 | `SubsetExport_KeyFilePath`<br>[string field]              | Path to a key file                                                      | Yes, if `Password` is set                  | `C:\keys\mobile.key`                    |
 | `SubsetExport_TargetFilePath`<br>[string field]           | Path to the target database.<br>(Absolute, or relative to source database parent folder.) | No                       | `C:\sync\mobile.kdbx`<br>or<br>`mobile.kdbx`<br>or<br>`..\mobile.kdbx` |
 | `SubsetExport_Tag`<br>[string field]                      | Tag for filtering                                                       | Yes, if `SubsetExport_Group` is set        | `MobileSync`                            |
 | `SubsetExport_Group`<br>[string field]                    | Group for filtering                                                     | Yes, if `SubsetExport_Tag` is set          | `MobileGroup`                           |
-| `SubsetExport_KeyTransformationRounds`<br>[string field]  | Overwrite the number of KeyTransformationRounds for the target database | Yes                                      | `10000000`                              |
-| `SubsetExport_RootGroupName`<br>[string field]                           | Overwrite the name of the root group in the target database             | Yes                                      | `NewRootGroupName`                      |
+| `SubsetExport_KeyTransformationRounds`<br>[string field]  | Overwrite the number of KeyTransformationRounds for the target database | Yes                                        | `10000000`                              |
+| `SubsetExport_RootGroupName`<br>[string field]            | Overwrite the name of the root group in the target database             | Yes                                        | `NewRootGroupName`                      |
 
 - Every time the (source) database is saved the target databases will be recreated automatically
 
