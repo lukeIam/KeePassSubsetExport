@@ -267,7 +267,7 @@ namespace KeePassSubsetExport
             foreach (PwEntry entry in entries)
             {
                 // Get or create the target group in the target database (including hierarchy)
-                PwGroup targetGroup = CreateTargetGroupInDatebase(entry, targetDatabase, sourceDb);
+                PwGroup targetGroup = settings.FlatExport ? targetDatabase.RootGroup : CreateTargetGroupInDatebase(entry, targetDatabase, sourceDb);
 
                 // Clone entry
                 PwEntry peNew = new PwEntry(false, false);

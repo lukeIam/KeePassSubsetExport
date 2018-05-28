@@ -40,6 +40,10 @@ namespace KeePassSubsetExport
         /// The name of the group to export (optional if <see cref="Tag"/> is set).
         /// </summary>
         public string Group { get; private set; }
+        /// <summary>
+        /// True, if the export progress should ignore groups/folders, false otherwise (optional, defaults to false).
+        /// </summary>
+        public bool FlatExport { get; private set; }
 
         // Private constructor
         private Settings()
@@ -61,7 +65,8 @@ namespace KeePassSubsetExport
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
                 KeyTransformationRoundsString = settingsEntry.Strings.ReadSafe("SubsetExport_KeyTransformationRounds"),
                 RootGroupName = settingsEntry.Strings.ReadSafe("SubsetExport_RootGroupName"),
-                Group = settingsEntry.Strings.ReadSafe("SubsetExport_Group")
+                Group = settingsEntry.Strings.ReadSafe("SubsetExport_Group"),
+                FlatExport = settingsEntry.Strings.ReadSafe("SubsetExport_FlatExport").ToLower().Trim() == "true"
             };
         }
     }
