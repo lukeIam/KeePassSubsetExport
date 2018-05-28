@@ -19,7 +19,7 @@ namespace KeePassSubsetExport
         /// <summary>
         /// The path to a key file to protect the target database (optional if <see cref="Password"/> is set).
         /// </summary>
-        public string KeyFilePath { get; private set; }
+        public string KeyFilePath { get; set; }
         /// <summary>
         /// Tag to export (optional if <see cref="Group"/> is set).
         /// </summary>

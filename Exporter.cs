@@ -45,11 +45,24 @@ namespace KeePassSubsetExport
                 var settings = Settings.Parse(settingsEntry);
 
                 // If a key file is given it must exist.
-                if (!string.IsNullOrEmpty(settings.KeyFilePath) && !File.Exists(settings.KeyFilePath))
+                if (!string.IsNullOrEmpty(settings.KeyFilePath))
                 {
-                    MessageService.ShowWarning("SubsetExport: Keyfile is given but could not be found for: " +
-                                               settingsEntry.Strings.ReadSafe("Title"), settings.KeyFilePath);
-                    continue;
+                    // Default to same folder as sourceDb for the keyfile if no directory is specified
+                    if (!Path.IsPathRooted(settings.KeyFilePath))
+                    {
+                        string sourceDbPath = Path.GetDirectoryName(sourceDb.IOConnectionInfo.Path);
+                        if (sourceDbPath != null)
+                        {
+                            settings.KeyFilePath = Path.Combine(sourceDbPath, settings.KeyFilePath);
+                        }
+                    }
+
+                    if (!File.Exists(settings.KeyFilePath))
+                    {
+                        MessageService.ShowWarning("SubsetExport: Keyfile is given but could not be found for: " +
+                                                   settingsEntry.Strings.ReadSafe("Title"), settings.KeyFilePath);
+                        continue;
+                    }
                 }
 
                 // If keyTransformationRounds are given it must be an integer.
