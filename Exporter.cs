@@ -36,8 +36,7 @@ namespace KeePassSubsetExport
             {
                 return;
             }
-            IEnumerable<PwEntry> jobSettings = settingsGroup.Entries
-                .Where(x => x.Strings.ReadSafe("Title").Contains("SubsetExport_"));
+            IEnumerable<PwEntry> jobSettings = settingsGroup.Entries;
 
             // Loop through all found entries - each on is a export job 
             foreach (var settingsEntry in jobSettings)
