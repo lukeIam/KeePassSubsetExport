@@ -272,7 +272,10 @@ namespace KeePassSubsetExport
             if (!Path.IsPathRooted(settings.TargetFilePath))
             {
                 string sourceDbPath = Path.GetDirectoryName(sourceDb.IOConnectionInfo.Path);
-                settings.TargetFilePath = Path.Combine(sourceDbPath, settings.TargetFilePath);
+                if (sourceDbPath != null)
+                {
+                    settings.TargetFilePath = Path.Combine(sourceDbPath, settings.TargetFilePath);
+                }
             }
 
             // Create target folder (if not exist)
