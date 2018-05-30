@@ -32,6 +32,7 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 | `SubsetExport_RootGroupName`<br>[string field]            | Overwrite the name of the root group in the target database             | Yes                                        | `NewRootGroupName`                      |
 
 - Every time the (source) database is saved the target databases will be recreated automatically
+- If both `SubsetExport_Tag` and `SubsetExport_Group` are set, only entries matching *both* will be exported
 
 ![create](https://user-images.githubusercontent.com/5115160/38439682-da51a266-39de-11e8-9cc4-744d5a3f0dae.png)
 
