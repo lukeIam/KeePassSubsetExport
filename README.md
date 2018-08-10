@@ -31,6 +31,8 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 | `SubsetExport_KeyTransformationRounds`<br>[string field]  | Overwrite the number of KeyTransformationRounds for the target database | Yes                                        | `10000000`                              |
 | `SubsetExport_RootGroupName`<br>[string field]            | Overwrite the name of the root group in the target database             | Yes                                        | `NewRootGroupName`                      |
 | `SubsetExport_FlatExport`<br>[string field]               | If `True` no groups will be created in the target database (flat export)| Yes (defaults to `False`)                  | `True`                                  |
+| `SubsetExport_OverrideTargetDatabase`<br>[string field]   | If `True` the traget database will be overriden, otherwise the enries will added to the target database | Yes (defaults to `True`) | `True`                    |
+| `SubsetExport_OverrideEntryOnlyNewer`<br>[string field]   | If `True` only newer entries will overrides older entries `OverrideTargetDatabase` is `False`)| Yes (defaults to `False`) | `True`                             |
 
 - Every time the (source) database is saved the target databases will be recreated automatically
 - To disable an export job temporarily just move its entry to another folder
