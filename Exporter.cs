@@ -294,15 +294,12 @@ namespace KeePassSubsetExport
                 if (!settings.OverrideTargetDatabase)
                 {
                     peNew = targetGroup.FindEntry(entry.Uuid, bSearchRecursive: false);
-
-                    if (settings.OverrideEntryOnlyNewer)
+                    
+                    // Check if the target entry is newer than the source entry
+                    if (settings.OverrideEntryOnlyNewer && peNew != null && peNew.LastModificationTime > entry.LastModificationTime)
                     {
-                        // Check if the target entry is newer than the source entry
-                        if (peNew != null && peNew.LastModificationTime > entry.LastModificationTime)
-                        {
-                            // Yes -> skip this entry
-                            continue;
-                        }
+                        // Yes -> skip this entry
+                        continue;
                     }
                 }
 
