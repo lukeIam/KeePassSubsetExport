@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KeePass;
-using KeePass.Resources;
 using KeePassLib;
 using KeePassLib.Collections;
 using KeePassLib.Cryptography.KeyDerivation;
 using KeePassLib.Interfaces;
 using KeePassLib.Keys;
-using KeePassLib.Security;
 using KeePassLib.Serialization;
 using KeePassLib.Utility;
 
@@ -127,56 +124,14 @@ namespace KeePassSubsetExport
             if (!settings.Password.IsEmpty)
             {
                 byte[] passwordByteArray = settings.Password.ReadUtf8();
-                key.AddUserKey(new KcpPassword(passwordByteArray));
+                hasPassword = KeyHelper.AddPasswordToKey(passwordByteArray, key);
                 MemUtil.ZeroByteArray(passwordByteArray);
-                hasPassword = true;
             }
 
             // Load a keyfile for the target database if requested (and add it to the key)
             if (!string.IsNullOrEmpty(settings.KeyFilePath))
             {
-                bool bIsKeyProv = Program.KeyProviderPool.IsKeyProvider(settings.KeyFilePath);
-
-                if (!bIsKeyProv)
-                {
-                    try
-                    {
-                        key.AddUserKey(new KcpKeyFile(settings.KeyFilePath, true));
-                        hasKeyFile = true;
-                    }
-                    catch (InvalidDataException exId)
-                    {
-                        MessageService.ShowWarning(settings.KeyFilePath, exId);
-                    }
-                    catch (Exception exKf)
-                    {
-                        MessageService.ShowWarning(settings.KeyFilePath, KPRes.KeyFileError, exKf);
-                    }
-                }
-                else
-                {
-                    KeyProviderQueryContext ctxKp = new KeyProviderQueryContext(
-                        ConnectionInfo, true, false);
-
-                    KeyProvider prov = Program.KeyProviderPool.Get(settings.KeyFilePath);
-                    bool bPerformHash = !prov.DirectKey;
-                    byte[] pbCustomKey = prov.GetKey(ctxKp);
-
-                    if ((pbCustomKey != null) && (pbCustomKey.Length > 0))
-                    {
-                        try
-                        {
-                            key.AddUserKey(new KcpCustomKey(settings.KeyFilePath, pbCustomKey, bPerformHash));
-                            hasKeyFile = true;
-                        }
-                        catch (Exception exCkp)
-                        {
-                            MessageService.ShowWarning(exCkp);
-                        }
-
-                        MemUtil.ZeroByteArray(pbCustomKey);
-                    }
-                }
+                hasKeyFile = KeyHelper.AddKeyfileToKey(settings.KeyFilePath, key, ConnectionInfo);
             }
 
             // Check if at least a password or a keyfile have been added to the key object
