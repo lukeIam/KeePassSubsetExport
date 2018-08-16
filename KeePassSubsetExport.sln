@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{98A5390F-0320-4D88-AA77-C1154DD08838}") = "KeePassSubsetExport", "KeePassSubsetExport.csproj", "{2E861274-C7D4-4774-B9A0-A746E0774A88}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeePassSubsetExport", "KeePassSubsetExport.csproj", "{2E861274-C7D4-4774-B9A0-A746E0774A88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeePassSubsetExport.Tests", "KeePassSubsetExport.Tests\KeePassSubsetExport.Tests.csproj", "{7FF2FCE6-3F03-4BFD-8E02-B55EE50266E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +17,15 @@ Global
 		{2E861274-C7D4-4774-B9A0-A746E0774A88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E861274-C7D4-4774-B9A0-A746E0774A88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E861274-C7D4-4774-B9A0-A746E0774A88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FF2FCE6-3F03-4BFD-8E02-B55EE50266E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FF2FCE6-3F03-4BFD-8E02-B55EE50266E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FF2FCE6-3F03-4BFD-8E02-B55EE50266E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FF2FCE6-3F03-4BFD-8E02-B55EE50266E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {967A2DD2-03C4-4B1A-9BE1-40CE4DA3CDCD}
 	EndGlobalSection
 EndGlobal

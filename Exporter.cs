@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KeePass;
-using KeePass.Resources;
 using KeePassLib;
 using KeePassLib.Collections;
 using KeePassLib.Cryptography.KeyDerivation;
 using KeePassLib.Interfaces;
 using KeePassLib.Keys;
-using KeePassLib.Security;
 using KeePassLib.Serialization;
 using KeePassLib.Utility;
 
@@ -127,56 +124,14 @@ namespace KeePassSubsetExport
             if (!settings.Password.IsEmpty)
             {
                 byte[] passwordByteArray = settings.Password.ReadUtf8();
-                key.AddUserKey(new KcpPassword(passwordByteArray));
+                hasPassword = KeyHelper.AddPasswordToKey(passwordByteArray, key);
                 MemUtil.ZeroByteArray(passwordByteArray);
-                hasPassword = true;
             }
 
             // Load a keyfile for the target database if requested (and add it to the key)
             if (!string.IsNullOrEmpty(settings.KeyFilePath))
             {
-                bool bIsKeyProv = Program.KeyProviderPool.IsKeyProvider(settings.KeyFilePath);
-
-                if (!bIsKeyProv)
-                {
-                    try
-                    {
-                        key.AddUserKey(new KcpKeyFile(settings.KeyFilePath, true));
-                        hasKeyFile = true;
-                    }
-                    catch (InvalidDataException exId)
-                    {
-                        MessageService.ShowWarning(settings.KeyFilePath, exId);
-                    }
-                    catch (Exception exKf)
-                    {
-                        MessageService.ShowWarning(settings.KeyFilePath, KPRes.KeyFileError, exKf);
-                    }
-                }
-                else
-                {
-                    KeyProviderQueryContext ctxKp = new KeyProviderQueryContext(
-                        ConnectionInfo, true, false);
-
-                    KeyProvider prov = Program.KeyProviderPool.Get(settings.KeyFilePath);
-                    bool bPerformHash = !prov.DirectKey;
-                    byte[] pbCustomKey = prov.GetKey(ctxKp);
-
-                    if ((pbCustomKey != null) && (pbCustomKey.Length > 0))
-                    {
-                        try
-                        {
-                            key.AddUserKey(new KcpCustomKey(settings.KeyFilePath, pbCustomKey, bPerformHash));
-                            hasKeyFile = true;
-                        }
-                        catch (Exception exCkp)
-                        {
-                            MessageService.ShowWarning(exCkp);
-                        }
-
-                        MemUtil.ZeroByteArray(pbCustomKey);
-                    }
-                }
+                hasKeyFile = KeyHelper.AddKeyfileToKey(settings.KeyFilePath, key, ConnectionInfo);
             }
 
             // Check if at least a password or a keyfile have been added to the key object
@@ -186,11 +141,32 @@ namespace KeePassSubsetExport
                 throw new InvalidOperationException("For the target database at least a password or a keyfile is required.");
             }
 
+            // Default to same folder as sourceDb for target if no directory is specified
+            if (!Path.IsPathRooted(settings.TargetFilePath))
+            {
+                string sourceDbPath = Path.GetDirectoryName(sourceDb.IOConnectionInfo.Path);
+                if (sourceDbPath != null)
+                {
+                    settings.TargetFilePath = Path.Combine(sourceDbPath, settings.TargetFilePath);
+                }
+            }
+
             // Create a new database 
             PwDatabase targetDatabase = new PwDatabase();
 
-            // Apply the created key to the new database
-            targetDatabase.New(new IOConnectionInfo(), key);
+            if (!settings.OverrideTargetDatabase && File.Exists(settings.TargetFilePath))
+            {
+                // Connect the database object to the existing database
+                targetDatabase.Open(new IOConnectionInfo()
+                {
+                    Path = settings.TargetFilePath
+                }, key, new NullStatusLogger());
+            }
+            else
+            {
+                // Apply the created key to the new database
+                targetDatabase.New(new IOConnectionInfo(), key);
+            }
 
             // Copy database settings
             targetDatabase.Color = sourceDb.Color;
@@ -269,43 +245,60 @@ namespace KeePassSubsetExport
                 // Get or create the target group in the target database (including hierarchy)
                 PwGroup targetGroup = settings.FlatExport ? targetDatabase.RootGroup : CreateTargetGroupInDatebase(entry, targetDatabase, sourceDb);
 
-                // Clone entry
-                PwEntry peNew = new PwEntry(false, false);
-                peNew.Uuid = entry.Uuid;
+                PwEntry peNew = null;
+                if (!settings.OverrideTargetDatabase)
+                {
+                    peNew = targetGroup.FindEntry(entry.Uuid, bSearchRecursive: false);
+                    
+                    // Check if the target entry is newer than the source entry
+                    if (settings.OverrideEntryOnlyNewer && peNew != null && peNew.LastModificationTime > entry.LastModificationTime)
+                    {
+                        // Yes -> skip this entry
+                        continue;
+                    }
+                }
+
+                // Was no existing entry in the target database found?
+                if (peNew == null)
+                {
+                    // Create a new entry
+                    peNew = new PwEntry(false, false);
+                    peNew.Uuid = entry.Uuid;
+
+                    // Add entry to the target group in the new database
+                    targetGroup.AddEntry(peNew, true);
+                }
+
+                // Clone entry properties
                 peNew.AssignProperties(entry, false, true, true);
 
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);
-
-                // Add entry to the target group in the new database
-                targetGroup.AddEntry(peNew, true);
             }
 
-            // Default to same folder as sourceDb for target if no directory is specified
-            if (!Path.IsPathRooted(settings.TargetFilePath))
+            if (!settings.OverrideTargetDatabase && File.Exists(settings.TargetFilePath))
             {
-                string sourceDbPath = Path.GetDirectoryName(sourceDb.IOConnectionInfo.Path);
-                if (sourceDbPath != null)
+                // Save changes to existing target database
+                targetDatabase.Save(new NullStatusLogger());
+            }
+            else
+            {
+                // Create target folder (if not exist)
+                string targetFolder = Path.GetDirectoryName(settings.TargetFilePath);
+
+                if (targetFolder == null)
                 {
-                    settings.TargetFilePath = Path.Combine(sourceDbPath, settings.TargetFilePath);
+                    throw new ArgumentException("Can't get target folder.");
                 }
-            }
+                Directory.CreateDirectory(targetFolder);
 
-            // Create target folder (if not exist)
-            string targetFolder = Path.GetDirectoryName(settings.TargetFilePath);
+                // Save the new database under the target path
+                KdbxFile kdbx = new KdbxFile(targetDatabase);
 
-            if (targetFolder == null)
-            {
-                throw new ArgumentException("Can't get target folder.");
-            }
-            Directory.CreateDirectory(targetFolder);
-
-            // Save the new database under the target path
-            KdbxFile kdbx = new KdbxFile(targetDatabase);
-
-            using (FileStream outputStream = new FileStream(settings.TargetFilePath, FileMode.Create))
-            {
-                kdbx.Save(outputStream, null, KdbxFormat.Default, new NullStatusLogger());
+                using (FileStream outputStream = new FileStream(settings.TargetFilePath, FileMode.Create))
+                {
+                    kdbx.Save(outputStream, null, KdbxFormat.Default, new NullStatusLogger());
+                }
             }
         }
 

@@ -41,9 +41,17 @@ namespace KeePassSubsetExport
         /// </summary>
         public string Group { get; private set; }
         /// <summary>
-        /// True, if the export progress should ignore groups/folders, false otherwise (optional, defaults to false).
+        /// If true, the export progress will ignore groups/folders, false otherwise (optional, defaults to false).
         /// </summary>
         public bool FlatExport { get; private set; }
+        /// <summary>
+        /// If true, the traget database will be overriden, otherwise the enries will added to the target database (optional, defaults to true).
+        /// </summary>
+        public bool OverrideTargetDatabase { get; private set; }
+        /// <summary>
+        /// If true, only newer entries will overrides older entries (only works with <see cref="OverrideTargetDatabase"/> == false).
+        /// </summary>
+        public bool OverrideEntryOnlyNewer { get; private set; }
 
         // Private constructor
         private Settings()
@@ -66,7 +74,9 @@ namespace KeePassSubsetExport
                 KeyTransformationRoundsString = settingsEntry.Strings.ReadSafe("SubsetExport_KeyTransformationRounds"),
                 RootGroupName = settingsEntry.Strings.ReadSafe("SubsetExport_RootGroupName"),
                 Group = settingsEntry.Strings.ReadSafe("SubsetExport_Group"),
-                FlatExport = settingsEntry.Strings.ReadSafe("SubsetExport_FlatExport").ToLower().Trim() == "true"
+                FlatExport = settingsEntry.Strings.ReadSafe("SubsetExport_FlatExport").ToLower().Trim() == "true",
+                OverrideTargetDatabase = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideTargetDatabase").ToLower().Trim() != "false",
+                OverrideEntryOnlyNewer = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntryOnlyNewer").ToLower().Trim() == "true"
             };
         }
     }
