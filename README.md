@@ -1,6 +1,13 @@
 # KeePassSubsetExport 
 KeePassSubsetExport is a [KeePass2](https://keepass.info) plugin which automatically exports a subset of entries (tag based) to new databases with different keys.
 
+[![Build Status](https://lukeiam.visualstudio.com/KeePassSubsetExport/_apis/build/status/KeePassSubsetExport-Build "View build on VisualStudio online")](https://lukeiam.visualstudio.com/KeePassSubsetExport/_build/latest?definitionId=1)
+[![Quality Status](https://sonarcloud.io/api/project_badges/measure?project=KeePassSubsetExport&metric=alert_status "View project on SonarCloud")](https://sonarcloud.io/dashboard?id=KeePassSubsetExport)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=KeePassSubsetExport&metric=coverage "View coverage on SonarCloud")](https://sonarcloud.io/component_measures?id=KeePassSubsetExport&metric=coverage)
+[![Latest release](https://img.shields.io/github/release/lukeiam/KeePassSubsetExport.svg?label=latest%20release)](https://github.com/lukeIam/KeePassSubsetExport/releases/latest)
+[![Github All Releases](https://img.shields.io/github/downloads/lukeIam/KeePassSubsetExport/total.svg)](https://github.com/lukeIam/KeePassSubsetExport/releases)
+[![License](https://img.shields.io/github/license/lukeIam/KeePassSubsetExport.svg)](https://github.com/lukeIam/KeePassSubsetExport/blob/master/LICENSE)
+
 ## Why?
 I'm using the plugin to export some entries of my main database to another database which is [synced](https://syncthing.net) to my mobile devices.
 Additionally, I'm sharing some other entries with my family.
