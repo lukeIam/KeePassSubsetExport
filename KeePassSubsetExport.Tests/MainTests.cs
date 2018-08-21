@@ -28,6 +28,12 @@ namespace KeePassSubsetExport.Tests
 
             _settings.DbTestPw = "TargetPw";
             _settings.KeyTestPath = Path.Combine(_settings.DbAFilesPath, "A.key");
+
+            // Delete old files
+            foreach (var filePathToDelete in Directory.GetFiles(_settings.RootPath, "*_*.kdbx"))
+            {
+                File.Delete(filePathToDelete);
+            }
         }
 
         [ClassInitialize()]
