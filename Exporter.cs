@@ -286,7 +286,8 @@ namespace KeePassSubsetExport
 
         private static void CopyKdfSettings(PwDatabase sourceDb, Settings settings, PwDatabase targetDatabase)
         {
-            targetDatabase.KdfParameters = sourceDb.KdfParameters;
+            // Create a clone of the KdfParameters object. As cloning is not supportet serialize and deserialize
+            targetDatabase.KdfParameters = KdfParameters.DeserializeExt(KdfParameters.SerializeExt(sourceDb.KdfParameters));
 
             if (Equals(targetDatabase.KdfParameters.KdfUuid, UuidAes))
             {
