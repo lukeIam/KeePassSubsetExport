@@ -320,8 +320,7 @@ namespace KeePassSubsetExport
                 if (settings.Argon2ParamParallelism != 0)
                 {
                     // Set ParamParallelism (min default value == 2 MB)
-                    targetDatabase.KdfParameters.SetUInt64(Argon2Kdf.ParamParallelism,
-                        Math.Max(1048576, settings.Argon2ParamParallelism));
+                    targetDatabase.KdfParameters.SetUInt64(Argon2Kdf.ParamParallelism, settings.Argon2ParamParallelism);
                 }
             }
         }
