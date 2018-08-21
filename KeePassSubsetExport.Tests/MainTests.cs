@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using KeePassLib;
+using KeePassLib.Cryptography.KeyDerivation;
 using KeePassSubsetExport.Tests.ComparisonData;
 using KeePassSubsetExport.Tests.DataContainer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,7 +31,7 @@ namespace KeePassSubsetExport.Tests
             _settings.KeyTestPath = Path.Combine(_settings.DbAFilesPath, "A.key");
 
             // Delete old files
-            foreach (var filePathToDelete in Directory.GetFiles(_settings.RootPath, "*_*.kdbx"))
+            foreach (var filePathToDelete in Directory.GetFiles(_settings.DbAFilesPath, "*_*.kdbx"))
             {
                 File.Delete(filePathToDelete);
             }
@@ -56,6 +57,8 @@ namespace KeePassSubsetExport.Tests
 
             var group = db.RootGroup;
 
+            CheckKdf(db.KdfParameters, Ae1RealData.Kdf);
+
             CheckGroup(group, Ae1RealData.Data);
 
             db.Close();
@@ -67,6 +70,8 @@ namespace KeePassSubsetExport.Tests
             PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae2RealData.Db), keyPath: _settings.KeyTestPath);
 
             var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae2RealData.Kdf);
 
             CheckGroup(group, Ae2RealData.Data);
 
@@ -80,6 +85,8 @@ namespace KeePassSubsetExport.Tests
 
             var group = db.RootGroup;
 
+            CheckKdf(db.KdfParameters, Ae3RealData.Kdf);
+
             CheckGroup(group, Ae3RealData.Data);
 
             db.Close();
@@ -91,6 +98,8 @@ namespace KeePassSubsetExport.Tests
             PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae3RealData.Db), password: _settings.DbTestPw);
 
             var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae4RealData.Kdf);
 
             CheckGroup(group, Ae3RealData.Data);
 
@@ -131,6 +140,25 @@ namespace KeePassSubsetExport.Tests
             Assert.AreEqual(testEntryValues.UserName, entry.Strings.ReadSafe("UserName"));
             Assert.AreEqual(testEntryValues.Password, entry.Strings.ReadSafe("Password"));
             Assert.AreEqual(testEntryValues.Url, entry.Strings.ReadSafe("URL"));
+        }
+
+        private static void CheckKdf(KdfParameters param, TestKdfValues testEntryValues)
+        {
+            Assert.AreEqual(testEntryValues.KdfUuid, param.KdfUuid);
+            if (param.KdfUuid.Equals(TestKdfValues.UuidAes))
+            {
+                Assert.AreEqual(testEntryValues.AesKeyTransformationRounds, param.GetUInt64(AesKdf.ParamRounds, 0));
+            }
+            else if(param.KdfUuid.Equals(TestKdfValues.UuidArgon2))
+            {
+                Assert.AreEqual(testEntryValues.Argon2Iterations, param.GetUInt64(Argon2Kdf.ParamIterations, 0));
+                Assert.AreEqual(testEntryValues.Argon2Memory, param.GetUInt64(Argon2Kdf.ParamMemory, 0));
+                Assert.AreEqual(testEntryValues.Argon2Parallelism, param.GetUInt64(Argon2Kdf.ParamParallelism, 0));
+            }
+            else
+            {
+                Assert.Fail("Kdf is not Aes or Argon2"); 
+            }
         }
 
         #endregion

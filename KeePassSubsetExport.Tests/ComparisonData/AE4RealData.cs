@@ -7,6 +7,12 @@ namespace KeePassSubsetExport.Tests.ComparisonData
     {
         public static string Db => "A_E4.kdbx";
 
+        public static TestKdfValues Kdf => new TestKdfValues()
+        {
+            KdfUuid = TestKdfValues.UuidAes,
+            AesKeyTransformationRounds = 60000
+        };
+
         public static TestGroupValues Data =>
             new TestGroupValues()
             {
