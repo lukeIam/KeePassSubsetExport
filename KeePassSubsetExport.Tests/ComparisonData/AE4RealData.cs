@@ -29,7 +29,7 @@ namespace KeePassSubsetExport.Tests.ComparisonData
                             new TestEntryValues()
                             {
                                 Uuid = "017718804448F249ACFEF68C87D075C6",
-                                Title = "A_G1_1",
+                                Title = "A_G1_E1",
                                 UserName = "user",
                                 Password = "dummy",
                                 Url = "https://github.com/lukeIam/KeePassSubsetExport"

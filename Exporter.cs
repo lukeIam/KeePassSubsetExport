@@ -172,6 +172,9 @@ namespace KeePassSubsetExport
 
             // Copy all entries to the new database
             CopyEntriesAndGroups(sourceDb, settings, entries, targetDatabase);
+
+            // Save new database
+            SaveTargetDatabase(settings, targetDatabase);
         }
 
         private static PwObjectList<PwEntry> GetMatching(PwDatabase sourceDb, Settings settings)
@@ -256,7 +259,10 @@ namespace KeePassSubsetExport
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);
             }
+        }
 
+        private static void SaveTargetDatabase(Settings settings, PwDatabase targetDatabase)
+        {
             if (!settings.OverrideTargetDatabase && File.Exists(settings.TargetFilePath))
             {
                 // Save changes to existing target database
@@ -321,7 +327,7 @@ namespace KeePassSubsetExport
                 if (settings.Argon2ParamParallelism != 0)
                 {
                     // Set ParamParallelism (min default value == 2 MB)
-                    targetDatabase.KdfParameters.SetUInt64(Argon2Kdf.ParamParallelism, settings.Argon2ParamParallelism);
+                    targetDatabase.KdfParameters.SetUInt32(Argon2Kdf.ParamParallelism, settings.Argon2ParamParallelism);
                 }
             }
         }

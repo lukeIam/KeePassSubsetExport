@@ -40,7 +40,7 @@ namespace KeePassSubsetExport
         /// <summary>
         /// The parsed count of parallelism for KdfArgon2.
         /// </summary>
-        public ulong Argon2ParamParallelism { get; set; }
+        public uint Argon2ParamParallelism { get; set; }
         /// <summary>
         /// The new name for the root group (optional).
         /// </summary>
@@ -80,6 +80,19 @@ namespace KeePassSubsetExport
             return result;
         }
 
+        private static uint GetUIntValue(string key, PwEntry settingsEntry)
+        {
+            uint result = 0;
+            string value = settingsEntry.Strings.ReadSafe(key);
+            if (!string.IsNullOrEmpty(value) && !uint.TryParse(value, out result))
+            {
+                MessageService.ShowWarning("SubsetExport: " + key + " is given but can not be parsed as uint for: " +
+                                           settingsEntry.Strings.ReadSafe("Title"));
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Read all job settings from an entry.
         /// </summary>
@@ -102,7 +115,7 @@ namespace KeePassSubsetExport
                 OverrideEntryOnlyNewer = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntryOnlyNewer").ToLower().Trim() == "true",
                 Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry), 
                 Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
-                Argon2ParamParallelism = GetUlongValue("SubsetExport_Argon2ParamParallelism", settingsEntry)
+                Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry)
             };
         }
     }
