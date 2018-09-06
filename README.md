@@ -35,11 +35,14 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 | `SubsetExport_TargetFilePath`<br>[string field]           | Path to the target database.<br>(Absolute, or relative to source database parent folder.) | No                       | `C:\sync\mobile.kdbx`<br>or<br>`mobile.kdbx`<br>or<br>`..\mobile.kdbx` |
 | `SubsetExport_Tag`<br>[string field]                      | Tag for filtering                                                       | Yes, if `SubsetExport_Group` is set        | `MobileSync`                            |
 | `SubsetExport_Group`<br>[string field]                    | Group for filtering                                                     | Yes, if `SubsetExport_Tag` is set          | `MobileGroup`                           |
-| `SubsetExport_KeyTransformationRounds`<br>[string field]  | Overwrite the number of KeyTransformationRounds for the target database | Yes                                        | `10000000`                              |
+| `SubsetExport_KeyTransformationRounds`<br>[string field]  | Overwrite the number of KeyTransformationRounds for AesKdf              | Yes                                        | `10000000`                              |
 | `SubsetExport_RootGroupName`<br>[string field]            | Overwrite the name of the root group in the target database             | Yes                                        | `NewRootGroupName`                      |
 | `SubsetExport_FlatExport`<br>[string field]               | If `True` no groups will be created in the target database (flat export)| Yes (defaults to `False`)                  | `True`                                  |
 | `SubsetExport_OverrideTargetDatabase`<br>[string field]   | If `True` the traget database will be overriden, otherwise the enries will added to the target database | Yes (defaults to `True`) | `True`                    |
 | `SubsetExport_OverrideEntryOnlyNewer`<br>[string field]   | If `True` only newer entries will overrides older entries `OverrideTargetDatabase` is `False`)| Yes (defaults to `False`) | `True`                             |
+| `SubsetExport_Argon2ParamIterations`<br>[string field]    | Overwrite the number of iterations of Argon2Kdf                         | Yes                                        | `2`                                     |
+| `SubsetExport_Argon2ParamMemory`<br>[string field]        | Overwrite the memory parameter of Argon2Kdf                             | Yes                                        | `1048576` = 1MB                         |
+| `SubsetExport_Argon2ParamParallelism`<br>[string field]   | Overwrite the parallelism parameter of Argon2Kdf                        | Yes                                        | `2`                                     |
 
 - Every time the (source) database is saved the target databases will be recreated automatically
 - To disable an export job temporarily just move its entry to another folder
