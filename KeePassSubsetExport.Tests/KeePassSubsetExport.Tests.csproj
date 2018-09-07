@@ -51,10 +51,13 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComparisonData\Be1RealData.cs" />
+    <Compile Include="ComparisonData\Be2RealData.cs" />
     <Compile Include="ComparisonData\AE4RealData.cs" />
     <Compile Include="ComparisonData\Ae3RealData.cs" />
     <Compile Include="ComparisonData\Ae2RealData.cs" />
     <Compile Include="ComparisonData\AE1RealData.cs" />
+    <Compile Include="DataContainer\TestKdfValues.cs" />
     <Compile Include="DataContainer\TestEntryValues.cs" />
     <Compile Include="DataContainer\TestGroupValues.cs" />
     <Compile Include="DataContainer\TestSettings.cs" />

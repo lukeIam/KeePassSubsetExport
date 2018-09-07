@@ -1,5 +1,6 @@
 ﻿using KeePassLib;
 using KeePassLib.Security;
+using KeePassLib.Utility;
 
 namespace KeePassSubsetExport
 {
@@ -25,13 +26,21 @@ namespace KeePassSubsetExport
         /// </summary>
         public string Tag { get; private set; }
         /// <summary>
-        /// The keyTransformationRounds setting for the target database.
-        /// </summary>
-        public string KeyTransformationRoundsString { get; private set; }
-        /// <summary>
-        /// The parsed KeyTransformationRounds.
+        /// The parsed KeyTransformationRounds for KdfAes.
         /// </summary>
         public ulong KeyTransformationRounds { get; set; }
+        /// <summary>
+        /// The parsed number of interations for KdfArgon2.
+        /// </summary>
+        public ulong Argon2ParamIterations { get; set; }
+        /// <summary>
+        /// The parsed memory amount for KdfArgon2.
+        /// </summary>
+        public ulong Argon2ParamMemory { get; set; }
+        /// <summary>
+        /// The parsed count of parallelism for KdfArgon2.
+        /// </summary>
+        public uint Argon2ParamParallelism { get; set; }
         /// <summary>
         /// The new name for the root group (optional).
         /// </summary>
@@ -57,7 +66,33 @@ namespace KeePassSubsetExport
         private Settings()
         {
         }
-        
+
+        private static ulong GetUlongValue(string key, PwEntry settingsEntry)
+        {
+            ulong result = 0;
+            string value = settingsEntry.Strings.ReadSafe(key);
+            if (!string.IsNullOrEmpty(value) && !ulong.TryParse(value, out result))
+            {
+                MessageService.ShowWarning("SubsetExport: " + key + " is given but can not be parsed as ulog for: " +
+                                           settingsEntry.Strings.ReadSafe("Title"));
+            }
+
+            return result;
+        }
+
+        private static uint GetUIntValue(string key, PwEntry settingsEntry)
+        {
+            uint result = 0;
+            string value = settingsEntry.Strings.ReadSafe(key);
+            if (!string.IsNullOrEmpty(value) && !uint.TryParse(value, out result))
+            {
+                MessageService.ShowWarning("SubsetExport: " + key + " is given but can not be parsed as uint for: " +
+                                           settingsEntry.Strings.ReadSafe("Title"));
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Read all job settings from an entry.
         /// </summary>
@@ -65,18 +100,22 @@ namespace KeePassSubsetExport
         /// <returns>A settings object containing all the settings for this job.</returns>
         public static Settings Parse(PwEntry settingsEntry)
         {
+
             return new Settings()
             {
                 Password = settingsEntry.Strings.GetSafe("Password"),
                 TargetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath"),
                 KeyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath"),
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
-                KeyTransformationRoundsString = settingsEntry.Strings.ReadSafe("SubsetExport_KeyTransformationRounds"),
+                KeyTransformationRounds = GetUlongValue("SubsetExport_KeyTransformationRounds", settingsEntry),
                 RootGroupName = settingsEntry.Strings.ReadSafe("SubsetExport_RootGroupName"),
                 Group = settingsEntry.Strings.ReadSafe("SubsetExport_Group"),
                 FlatExport = settingsEntry.Strings.ReadSafe("SubsetExport_FlatExport").ToLower().Trim() == "true",
                 OverrideTargetDatabase = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideTargetDatabase").ToLower().Trim() != "false",
-                OverrideEntryOnlyNewer = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntryOnlyNewer").ToLower().Trim() == "true"
+                OverrideEntryOnlyNewer = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntryOnlyNewer").ToLower().Trim() == "true",
+                Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry), 
+                Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
+                Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry)
             };
         }
     }

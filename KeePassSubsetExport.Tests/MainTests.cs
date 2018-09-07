@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using KeePassLib;
+using KeePassLib.Cryptography.KeyDerivation;
 using KeePassSubsetExport.Tests.ComparisonData;
 using KeePassSubsetExport.Tests.DataContainer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,12 +23,21 @@ namespace KeePassSubsetExport.Tests
                 Path.GetDirectoryName(Path.GetDirectoryName(testContext.TestDir)) ??throw new InvalidOperationException();
 
             _settings.DbAFilesPath = Path.Combine(_settings.RootPath, @"TestDatabases\A\");
+            _settings.DbBFilesPath = Path.Combine(_settings.RootPath, @"TestDatabases\B\");
 
             _settings.DbMainPw = "Test";
-            _settings.DbMainPath = Path.Combine(_settings.DbAFilesPath, "A.kdbx");
+            _settings.DbAPath = Path.Combine(_settings.DbAFilesPath, "A.kdbx");
+            _settings.DbBPath = Path.Combine(_settings.DbBFilesPath, "B.kdbx");
 
             _settings.DbTestPw = "TargetPw";
-            _settings.KeyTestPath = Path.Combine(_settings.DbAFilesPath, "A.key");
+            _settings.KeyTestAPath = Path.Combine(_settings.DbAFilesPath, "A.key");
+            _settings.KeyTestBPath = Path.Combine(_settings.DbBFilesPath, "B.key");
+
+            // Delete old files
+            foreach (var filePathToDelete in Directory.GetFiles(_settings.DbAFilesPath, "*_*.kdbx"))
+            {
+                File.Delete(filePathToDelete);
+            }
         }
 
         [ClassInitialize()]
@@ -35,7 +45,11 @@ namespace KeePassSubsetExport.Tests
         {
             InitalizeSettings(testContext);
 
-            PwDatabase db = DbHelper.OpenDatabase(_settings.DbMainPath, _settings.DbMainPw);
+            PwDatabase db = DbHelper.OpenDatabase(_settings.DbAPath, _settings.DbMainPw);
+
+            Exporter.Export(db);
+
+            db = DbHelper.OpenDatabase(_settings.DbBPath, _settings.DbMainPw);
 
             Exporter.Export(db);
 
@@ -46,9 +60,11 @@ namespace KeePassSubsetExport.Tests
         public void Ae1Test()
         {
             PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae1RealData.Db), password:_settings.DbTestPw,
-                keyPath:_settings.KeyTestPath);
+                keyPath:_settings.KeyTestAPath);
 
             var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae1RealData.Kdf);
 
             CheckGroup(group, Ae1RealData.Data);
 
@@ -58,9 +74,11 @@ namespace KeePassSubsetExport.Tests
         [TestMethod]
         public void Ae2Test()
         {
-            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae2RealData.Db), keyPath: _settings.KeyTestPath);
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae2RealData.Db), keyPath: _settings.KeyTestAPath);
 
             var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae2RealData.Kdf);
 
             CheckGroup(group, Ae2RealData.Data);
 
@@ -74,6 +92,8 @@ namespace KeePassSubsetExport.Tests
 
             var group = db.RootGroup;
 
+            CheckKdf(db.KdfParameters, Ae3RealData.Kdf);
+
             CheckGroup(group, Ae3RealData.Data);
 
             db.Close();
@@ -82,11 +102,41 @@ namespace KeePassSubsetExport.Tests
         [TestMethod]
         public void Ae4Test()
         {
-            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae3RealData.Db), password: _settings.DbTestPw);
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae4RealData.Db), password: _settings.DbTestPw);
 
             var group = db.RootGroup;
 
-            CheckGroup(group, Ae3RealData.Data);
+            CheckKdf(db.KdfParameters, Ae4RealData.Kdf);
+
+            CheckGroup(group, Ae4RealData.Data);
+
+            db.Close();
+        }
+
+        [TestMethod]
+        public void Be1Test()
+        {
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbBFilesPath, Be1RealData.Db), keyPath: _settings.KeyTestBPath);
+
+            var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Be1RealData.Kdf);
+
+            CheckGroup(group, Be1RealData.Data);
+
+            db.Close();
+        }
+
+        [TestMethod]
+        public void Be2Test()
+        {
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbBFilesPath, Be2RealData.Db), keyPath: _settings.KeyTestAPath);
+
+            var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Be2RealData.Kdf);
+
+            CheckGroup(group, Be2RealData.Data);
 
             db.Close();
         }
@@ -125,6 +175,25 @@ namespace KeePassSubsetExport.Tests
             Assert.AreEqual(testEntryValues.UserName, entry.Strings.ReadSafe("UserName"));
             Assert.AreEqual(testEntryValues.Password, entry.Strings.ReadSafe("Password"));
             Assert.AreEqual(testEntryValues.Url, entry.Strings.ReadSafe("URL"));
+        }
+
+        private static void CheckKdf(KdfParameters param, TestKdfValues testEntryValues)
+        {
+            Assert.AreEqual(testEntryValues.KdfUuid, param.KdfUuid);
+            if (param.KdfUuid.Equals(TestKdfValues.UuidAes))
+            {
+                Assert.AreEqual(testEntryValues.AesKeyTransformationRounds, param.GetUInt64(AesKdf.ParamRounds, 0));
+            }
+            else if(param.KdfUuid.Equals(TestKdfValues.UuidArgon2))
+            {
+                Assert.AreEqual(testEntryValues.Argon2Iterations, param.GetUInt64(Argon2Kdf.ParamIterations, 0));
+                Assert.AreEqual(testEntryValues.Argon2Memory, param.GetUInt64(Argon2Kdf.ParamMemory, 0));
+                Assert.AreEqual(testEntryValues.Argon2Parallelism, param.GetUInt32(Argon2Kdf.ParamParallelism, 0));
+            }
+            else
+            {
+                Assert.Fail("Kdf is not Aes or Argon2"); 
+            }
         }
 
         #endregion
