@@ -188,15 +188,20 @@ namespace KeePassSubsetExport
             }
             else if (string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
             {
-                // Tag and group export
-                PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == settings.Group);
-
-                if (groupToExport == null)
+                // Support multiple group (Group1,Group2)
+                foreach (string group in settings.Group.Split(','))
                 {
-                    throw new ArgumentException("No group with the name of the Group-Setting found.");
-                }
+                    // Tag and group export
+                    PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == settings.Group);
 
-                entries = groupToExport.GetEntries(true);
+                    if (groupToExport == null)
+                    {
+                        throw new ArgumentException("No group with the name of the Group-Setting found.");
+                    }
+
+                    //entries = groupToExport.GetEntries(true);
+                    entries.Add(groupToExport.GetEntries(true));
+                }
             }
             else if (!string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
             {
