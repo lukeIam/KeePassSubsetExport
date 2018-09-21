@@ -184,7 +184,14 @@ namespace KeePassSubsetExport
             if (!string.IsNullOrEmpty(settings.Tag) && string.IsNullOrEmpty(settings.Group))
             {
                 // Tag only export
-                sourceDb.RootGroup.FindEntriesByTag(settings.Tag, entries, true);
+                //sourceDb.RootGroup.FindEntriesByTag(settings.Tag, entries, true);
+                // Support multiple tag (Tag1,Tag2)
+                foreach (string tag in settings.Tag.Split(','))
+                {
+                    PwObjectList<PwEntry> listStorage = new PwObjectList<PwEntry>();
+                    sourceDb.RootGroup.FindEntriesByTag(tag, listStorage, true);
+                    entries.Add(listStorage);
+                }
             }
             else if (string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
             {
@@ -206,14 +213,22 @@ namespace KeePassSubsetExport
             else if (!string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
             {
                 // Tag and group export
-                PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == settings.Group);
-
-                if (groupToExport == null)
+                foreach (string group in settings.Group.Split(','))
                 {
-                    throw new ArgumentException("No group with the name of the Group-Setting found.");
-                }
+                    PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
 
-                groupToExport.FindEntriesByTag(settings.Tag, entries, true);
+                    if (groupToExport == null)
+                    {
+                        throw new ArgumentException("No group with the name of the Group-Setting found.");
+                    }
+
+                    foreach (string tag in settings.Tag.Split(','))
+                    {
+                        PwObjectList<PwEntry> listStorage = new PwObjectList<PwEntry>();
+                        groupToExport.FindEntriesByTag(tag, listStorage, true);
+                        entries.Add(listStorage);
+                    }
+                }
             }
             else
             {
