@@ -201,7 +201,7 @@ namespace KeePassSubsetExport
                 foreach (string group in settings.Group.Split(','))
                 {
                     // Tag and group export
-                    PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == settings.Group);
+                    PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
 
                     if (groupToExport == null)
                     {
