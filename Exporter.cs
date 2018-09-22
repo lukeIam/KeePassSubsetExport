@@ -191,7 +191,7 @@ namespace KeePassSubsetExport
                     sourceDb.RootGroup.FindEntriesByTag(tag, tagEntries, true);
                     // Prevent duplicated entries
                     IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
-                    List<PwEntry> entriesToAdd = tagEntries.Where(x => existingUuids.Contains(x.Uuid)).ToList();
+                    List<PwEntry> entriesToAdd = tagEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
                     entries.Add(entriesToAdd);
                 }
             }
@@ -211,7 +211,7 @@ namespace KeePassSubsetExport
                     PwObjectList<PwEntry> groupEntries = groupToExport.GetEntries(true);
                     // Prevent duplicated entries
                     IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
-                    List<PwEntry> entriesToAdd = groupEntries.Where(x => existingUuids.Contains(x.Uuid)).ToList();
+                    List<PwEntry> entriesToAdd = groupEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
                     entries.Add(entriesToAdd);
                 }
             }
@@ -234,7 +234,7 @@ namespace KeePassSubsetExport
                         entries.Add(tagEntries);
                         // Prevent duplicated entries
                         IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
-                        List<PwEntry> entriesToAdd = tagEntries.Where(x => existingUuids.Contains(x.Uuid)).ToList();
+                        List<PwEntry> entriesToAdd = tagEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
                         entries.Add(entriesToAdd);
                     }
                 }
