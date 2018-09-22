@@ -114,6 +114,34 @@ namespace KeePassSubsetExport.Tests
         }
 
         [TestMethod]
+        public void Ae5Test()
+        {
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae5RealData.Db), password: _settings.DbTestPw);
+
+            var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae5RealData.Kdf);
+
+            CheckGroup(group, Ae5RealData.Data);
+
+            db.Close();
+        }
+
+        [TestMethod]
+        public void Ae6Test()
+        {
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae6RealData.Db), password: _settings.DbTestPw);
+
+            var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae6RealData.Kdf);
+
+            CheckGroup(group, Ae6RealData.Data);
+
+            db.Close();
+        }
+
+        [TestMethod]
         public void Be1Test()
         {
             PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbBFilesPath, Be1RealData.Db), keyPath: _settings.KeyTestBPath);
