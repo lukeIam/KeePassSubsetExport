@@ -184,13 +184,15 @@ namespace KeePassSubsetExport
             if (!string.IsNullOrEmpty(settings.Tag) && string.IsNullOrEmpty(settings.Group))
             {
                 // Tag only export
-                //sourceDb.RootGroup.FindEntriesByTag(settings.Tag, entries, true);
                 // Support multiple tag (Tag1,Tag2)
                 foreach (string tag in settings.Tag.Split(','))
                 {
-                    PwObjectList<PwEntry> listStorage = new PwObjectList<PwEntry>();
-                    sourceDb.RootGroup.FindEntriesByTag(tag, listStorage, true);
-                    entries.Add(listStorage);
+                    PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
+                    sourceDb.RootGroup.FindEntriesByTag(tag, tagEntries, true);
+                    // Prevent duplicated entries
+                    IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
+                    List<PwEntry> entriesToAdd = tagEntries.Where(x => existingUuids.Contains(x.Uuid)).ToList();
+                    entries.Add(entriesToAdd);
                 }
             }
             else if (string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
@@ -206,8 +208,11 @@ namespace KeePassSubsetExport
                         throw new ArgumentException("No group with the name of the Group-Setting found.");
                     }
 
-                    //entries = groupToExport.GetEntries(true);
-                    entries.Add(groupToExport.GetEntries(true));
+                    PwObjectList<PwEntry> groupEntries = groupToExport.GetEntries(true);
+                    // Prevent duplicated entries
+                    IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
+                    List<PwEntry> entriesToAdd = groupEntries.Where(x => existingUuids.Contains(x.Uuid)).ToList();
+                    entries.Add(entriesToAdd);
                 }
             }
             else if (!string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
@@ -224,9 +229,13 @@ namespace KeePassSubsetExport
 
                     foreach (string tag in settings.Tag.Split(','))
                     {
-                        PwObjectList<PwEntry> listStorage = new PwObjectList<PwEntry>();
-                        groupToExport.FindEntriesByTag(tag, listStorage, true);
-                        entries.Add(listStorage);
+                        PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
+                        groupToExport.FindEntriesByTag(tag, tagEntries, true);
+                        entries.Add(tagEntries);
+                        // Prevent duplicated entries
+                        IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
+                        List<PwEntry> entriesToAdd = tagEntries.Where(x => existingUuids.Contains(x.Uuid)).ToList();
+                        entries.Add(entriesToAdd);
                     }
                 }
             }
