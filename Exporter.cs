@@ -231,7 +231,6 @@ namespace KeePassSubsetExport
                     {
                         PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
                         groupToExport.FindEntriesByTag(tag, tagEntries, true);
-                        entries.Add(tagEntries);
                         // Prevent duplicated entries
                         IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
                         List<PwEntry> entriesToAdd = tagEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
