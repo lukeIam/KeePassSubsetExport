@@ -249,6 +249,15 @@ namespace KeePassSubsetExport
         private static void CopyEntriesAndGroups(PwDatabase sourceDb, Settings settings, PwObjectList<PwEntry> entries,
             PwDatabase targetDatabase)
         {
+            if (!settings.OverrideTargetDatabase && !settings.FlatExport &&
+                settings.OverrideEntireGroup && !string.IsNullOrEmpty(settings.Group))
+            {
+
+                foreach (PwEntry entry in entries)
+                {
+                    DeleteTargetGroupInDatebase(entry, targetDatabase);
+                }
+            }
             foreach (PwEntry entry in entries)
             {
                 // Get or create the target group in the target database (including hierarchy)
@@ -490,6 +499,25 @@ namespace KeePassSubsetExport
 
             // Return the target folder (leaf folder)
             return lastGroup;
+        }
+
+        /// <summary>
+        /// Delete the target group of an entry in the target database.
+        /// </summary>
+        /// <param name="entry">An entry wich is located in the folder with the target structure.</param>
+        /// <param name="targetDatabase">The target database in which the folder structure should be created.</param>
+        private static void DeleteTargetGroupInDatebase(PwEntry entry, PwDatabase targetDatabase)
+        {
+            // Collect all group names from the entry up to the root group
+            PwGroup group = entry.ParentGroup;
+            PwUuid groupId = group.Uuid;
+            PwGroup targetGroup = targetDatabase.RootGroup.FindGroup(groupId, false);
+
+            if (targetGroup != null)
+            {
+                targetGroup.DeleteAllObjects(targetDatabase);
+            }
+
         }
 
         /// <summary>
