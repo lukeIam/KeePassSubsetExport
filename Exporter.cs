@@ -249,10 +249,11 @@ namespace KeePassSubsetExport
         private static void CopyEntriesAndGroups(PwDatabase sourceDb, Settings settings, PwObjectList<PwEntry> entries,
             PwDatabase targetDatabase)
         {
+            //If OverrideEntireGroup is set to true
             if (!settings.OverrideTargetDatabase && !settings.FlatExport &&
                 settings.OverrideEntireGroup && !string.IsNullOrEmpty(settings.Group))
             {
-
+                //Delete every entry in target database' groups to everride them
                 foreach (PwEntry entry in entries)
                 {
                     DeleteTargetGroupInDatebase(entry, targetDatabase);
@@ -502,20 +503,25 @@ namespace KeePassSubsetExport
         }
 
         /// <summary>
-        /// Delete the target group of an entry in the target database.
+        /// Delete every entry in the target group.
         /// </summary>
         /// <param name="entry">An entry wich is located in the folder with the target structure.</param>
         /// <param name="targetDatabase">The target database in which the folder structure should be created.</param>
         private static void DeleteTargetGroupInDatebase(PwEntry entry, PwDatabase targetDatabase)
         {
-            // Collect all group names from the entry up to the root group
+            // Get the target group ID based on provided entry
             PwGroup group = entry.ParentGroup;
             PwUuid groupId = group.Uuid;
             PwGroup targetGroup = targetDatabase.RootGroup.FindGroup(groupId, false);
 
+            // If group exists in target database, delete its entries, otherwise show a warning
             if (targetGroup != null)
             {
                 targetGroup.DeleteAllObjects(targetDatabase);
+            }
+            else
+            {
+                MessageService.ShowWarning("Group not found in target database. OverrideEntireGroup will not work");
             }
 
         }
