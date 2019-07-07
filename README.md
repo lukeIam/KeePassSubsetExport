@@ -45,6 +45,7 @@ If you have more experience with KeePass plugins, I would be very grateful if yo
 | `SubsetExport_Argon2ParamIterations`<br>[string field]    | Overwrite the number of iterations of Argon2Kdf                         | Yes                                        | `2`                                     |
 | `SubsetExport_Argon2ParamMemory`<br>[string field]        | Overwrite the memory parameter of Argon2Kdf                             | Yes                                        | `1048576` = 1MB                         |
 | `SubsetExport_Argon2ParamParallelism`<br>[string field]   | Overwrite the parallelism parameter of Argon2Kdf<br>Typical parallelism values should be less or equal than to two times the number of available processor cores (less if increasing does not result in a performance increase) | Yes | `2` |
+| `SubsetExport_ExportUserAndPassOnly`<br>[string field]    | If `True` Only the Username and Password will be exported to the target Database. | Yes (defaults to `False`) | `True`                             |
 
 - Every time the (source) database is saved the target databases will be recreated automatically
 - To disable an export job temporarily just move its entry to another folder
