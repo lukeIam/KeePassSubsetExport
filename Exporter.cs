@@ -296,8 +296,21 @@ namespace KeePassSubsetExport
                     targetGroup.AddEntry(peNew, true);
                 }
 
-                // Clone entry properties
-                peNew.AssignProperties(entry, false, true, true);
+                // Clone entry properties if ExportUserAndPassOnly is false
+                if (!settings.ExportUserAndPassOnly)
+                {
+                    peNew.AssignProperties(entry, false, true, true);
+                }
+                else
+                {
+                    //[WIP]Implement a way to copy title, url and maybe notes?
+                    peNew.Strings.Set(PwDefs.TitleField,
+                            entry.Strings.GetSafe(PwDefs.TitleField));
+                    peNew.Strings.Set(PwDefs.UrlField,
+                            entry.Strings.GetSafe(PwDefs.UrlField));
+                    //peNew.Strings.Set(PwDefs.NotesField,
+                    //        entry.Strings.GetSafe(PwDefs.NotesField));
+                }
 
                 peNew.Strings.Set(PwDefs.UserNameField,
                     Settings.GetUser(entry, sourceDb));
