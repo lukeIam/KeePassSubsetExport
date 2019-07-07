@@ -24,10 +24,12 @@ namespace KeePassSubsetExport.Tests
 
             _settings.DbAFilesPath = Path.Combine(_settings.RootPath, @"TestDatabases\A\");
             _settings.DbBFilesPath = Path.Combine(_settings.RootPath, @"TestDatabases\B\");
+            _settings.DbCFilesPath = Path.Combine(_settings.RootPath, @"TestDatabases\C\");
 
             _settings.DbMainPw = "Test";
             _settings.DbAPath = Path.Combine(_settings.DbAFilesPath, "A.kdbx");
             _settings.DbBPath = Path.Combine(_settings.DbBFilesPath, "B.kdbx");
+            _settings.DbCPath = Path.Combine(_settings.DbCFilesPath, "C.kdbx");
 
             _settings.DbTestPw = "TargetPw";
             _settings.KeyTestAPath = Path.Combine(_settings.DbAFilesPath, "A.key");
@@ -49,7 +51,15 @@ namespace KeePassSubsetExport.Tests
 
             Exporter.Export(db);
 
+            db.Close();
+
             db = DbHelper.OpenDatabase(_settings.DbBPath, _settings.DbMainPw);
+
+            Exporter.Export(db);
+
+            db.Close();
+
+            db = DbHelper.OpenDatabase(_settings.DbCPath, _settings.DbMainPw);
 
             Exporter.Export(db);
 
@@ -139,6 +149,12 @@ namespace KeePassSubsetExport.Tests
             CheckGroup(group, Ae6RealData.Data);
 
             db.Close();
+        }
+
+        [TestMethod]
+        public void Ae7Test()
+        {
+            Assert.IsFalse(File.Exists(Path.Combine(_settings.DbCFilesPath, Ae7RealData.Db)), "An disabled/expired job was executed.");
         }
 
         [TestMethod]
