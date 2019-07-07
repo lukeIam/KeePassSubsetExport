@@ -71,6 +71,10 @@ namespace KeePassSubsetExport
         /// If true, this export job will be ignored.
         /// </summary>
         public bool Disabled { get; private set; }
+        /// <summary>
+        /// If true, Only Username and Password will be exported to the target Database.
+        /// </summary>
+        public bool ExportUserAndPassOnly { get; private set; }
 
         // Private constructor
         private Settings()
@@ -128,7 +132,8 @@ namespace KeePassSubsetExport
                 Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry),
                 Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
                 Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry),
-                Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime)
+                Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime),
+                ExportUserAndPassOnly = settingsEntry.Strings.ReadSafe("SubsetExport_ExportUserAndPassOnly").ToLower().Trim() == "true"
             };
         }
 
