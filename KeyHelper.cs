@@ -5,7 +5,6 @@ using KeePass.Resources;
 using KeePassLib.Keys;
 using KeePassLib.Serialization;
 using KeePassLib.Utility;
-using KeePassLib;
 
 namespace KeePassSubsetExport
 {
