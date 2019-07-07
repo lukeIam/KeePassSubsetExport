@@ -118,7 +118,7 @@ namespace KeePassSubsetExport
             return new Settings()
             {
                 //Password = settingsEntry.Strings.GetSafe("Password"),
-                Password = GetPass(settingsEntry, sourceDb),
+                Password = GetFieldWRef(settingsEntry, sourceDb, PwDefs.PasswordField),
                 TargetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath"),
                 KeyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath"),
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
@@ -137,67 +137,26 @@ namespace KeePassSubsetExport
             };
         }
 
-        public static ProtectedString GetUser(PwEntry entry, PwDatabase sourceDb)
+        public static ProtectedString GetFieldWRef(PwEntry entry, PwDatabase sourceDb, string fieldName)
+            //Had to implement this fuction here, since Exporter is private
         {
-            string strUser = GetUserPass(new PwEntryDatabase(entry, sourceDb))[0];
-            return ProtectedString.EmptyEx.Insert(0, strUser);
-        }
-
-        public static ProtectedString GetPass(PwEntry entry, PwDatabase sourceDb)
-        {
-            string strPass = GetUserPass(new PwEntryDatabase(entry, sourceDb))[1];
-            return ProtectedString.EmptyEx.Insert(0, strPass);
-        }
-
-        public static string[] GetUserPass(PwEntryDatabase entryDatabase)
-        {
-            // follow references
-            SprContext ctx = new SprContext(entryDatabase.entry, entryDatabase.database,
+            SprContext ctx = new SprContext(entry, sourceDb,
                     SprCompileFlags.All, false, false);
-
-            return GetUserPass(entryDatabase, ctx);
-        }
-
-        public static string[] GetUserPass(PwEntryDatabase entryDatabase, SprContext ctx)
-        {
-            // follow references
-            string user = SprEngine.Compile(
-                    entryDatabase.entry.Strings.ReadSafe(PwDefs.UserNameField), ctx);
-            string pass = SprEngine.Compile(
-                    entryDatabase.entry.Strings.ReadSafe(PwDefs.PasswordField), ctx);
-            //var f = (MethodInvoker)delegate
-            //{
-            //    // apparently, SprEngine.Compile might modify the database
-            //    host.MainWindow.UpdateUI(false, null, false, null, false, null, false);
-            //};
-            //if (host.MainWindow.InvokeRequired)
-            //    host.MainWindow.Invoke(f);
-            //else
-            //    f.Invoke();
-
-            return new string[] { user, pass };
+            return ProtectedString.EmptyEx.Insert(0, SprEngine.Compile(
+                    entry.Strings.ReadSafe(fieldName), ctx));
+            /* This next code is borrowed from KeePassHttps, I don't know what it does:
+            var f = (MethodInvoker)delegate
+            {
+                // apparently, SprEngine.Compile might modify the database
+                host.MainWindow.UpdateUI(false, null, false, null, false, null, false);
+            };
+            if (host.MainWindow.InvokeRequired)
+                host.MainWindow.Invoke(f);
+            else
+                f.Invoke();
+            */
         }
 
     }
-
-    public class PwEntryDatabase
-    {
-        private PwEntry _entry;
-        public PwEntry entry
-        {
-            get { return _entry; }
-        }
-        private PwDatabase _database;
-        public PwDatabase database
-        {
-            get { return _database; }
-        }
-
-        //public PwEntryDatabase(ref PwEntry e, ref PwDatabase db)
-        public PwEntryDatabase(PwEntry e, PwDatabase db)
-        {
-            _entry = e;
-            _database = db;
-        }
-    }
+    //No need for the class PwEntryDatabase
 }
