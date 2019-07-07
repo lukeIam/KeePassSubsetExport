@@ -9,6 +9,7 @@ using KeePassLib.Interfaces;
 using KeePassLib.Keys;
 using KeePassLib.Serialization;
 using KeePassLib.Utility;
+using KeePassLib.Security;
 
 namespace KeePassSubsetExport
 {
@@ -47,7 +48,7 @@ namespace KeePassSubsetExport
             foreach (var settingsEntry in jobSettings)
             {
                 // Load settings for this job
-                var settings = Settings.Parse(settingsEntry);
+                var settings = Settings.Parse(settingsEntry, sourceDb);
 
                 // Skip disabled/expired jobs
                 if (settings.Disabled)
@@ -297,6 +298,11 @@ namespace KeePassSubsetExport
 
                 // Clone entry properties
                 peNew.AssignProperties(entry, false, true, true);
+
+                peNew.Strings.Set(PwDefs.UserNameField,
+                    Settings.GetUser(entry, sourceDb));
+                peNew.Strings.Set(PwDefs.PasswordField,
+                    Settings.GetPass(entry, sourceDb));
 
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);

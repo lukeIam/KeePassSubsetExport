@@ -60,3 +60,4 @@ But KeePassSubsetExport has some advantages:
 - Key-File protection of the target databases is supported
 - KeyTransformationRounds of the target database is set to the number of the source database (can be overwritten)
 - Exports can be limited to a folder (can be combined with a tag filter)
+- Limited Field References support (in the export job password field and the entries username and password fields)

@@ -2,6 +2,7 @@
 using KeePassLib;
 using KeePassLib.Security;
 using KeePassLib.Utility;
+using KeePass.Util.Spr;
 
 namespace KeePassSubsetExport
 {
@@ -107,12 +108,13 @@ namespace KeePassSubsetExport
         /// </summary>
         /// <param name="settingsEntry">The entry to read the settings from.</param>
         /// <returns>A settings object containing all the settings for this job.</returns>
-        public static Settings Parse(PwEntry settingsEntry)
+        public static Settings Parse(PwEntry settingsEntry, PwDatabase sourceDb)
         {
 
             return new Settings()
             {
-                Password = settingsEntry.Strings.GetSafe("Password"),
+                //Password = settingsEntry.Strings.GetSafe("Password"),
+                Password = GetPass(settingsEntry, sourceDb),
                 TargetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath"),
                 KeyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath"),
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
@@ -128,6 +130,69 @@ namespace KeePassSubsetExport
                 Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry),
                 Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime)
             };
+        }
+
+        public static ProtectedString GetUser(PwEntry entry, PwDatabase sourceDb)
+        {
+            string strUser = GetUserPass(new PwEntryDatabase(entry, sourceDb))[0];
+            return ProtectedString.EmptyEx.Insert(0, strUser);
+        }
+
+        public static ProtectedString GetPass(PwEntry entry, PwDatabase sourceDb)
+        {
+            string strPass = GetUserPass(new PwEntryDatabase(entry, sourceDb))[1];
+            return ProtectedString.EmptyEx.Insert(0, strPass);
+        }
+
+        public static string[] GetUserPass(PwEntryDatabase entryDatabase)
+        {
+            // follow references
+            SprContext ctx = new SprContext(entryDatabase.entry, entryDatabase.database,
+                    SprCompileFlags.All, false, false);
+
+            return GetUserPass(entryDatabase, ctx);
+        }
+
+        public static string[] GetUserPass(PwEntryDatabase entryDatabase, SprContext ctx)
+        {
+            // follow references
+            string user = SprEngine.Compile(
+                    entryDatabase.entry.Strings.ReadSafe(PwDefs.UserNameField), ctx);
+            string pass = SprEngine.Compile(
+                    entryDatabase.entry.Strings.ReadSafe(PwDefs.PasswordField), ctx);
+            //var f = (MethodInvoker)delegate
+            //{
+            //    // apparently, SprEngine.Compile might modify the database
+            //    host.MainWindow.UpdateUI(false, null, false, null, false, null, false);
+            //};
+            //if (host.MainWindow.InvokeRequired)
+            //    host.MainWindow.Invoke(f);
+            //else
+            //    f.Invoke();
+
+            return new string[] { user, pass };
+        }
+
+    }
+
+    public class PwEntryDatabase
+    {
+        private PwEntry _entry;
+        public PwEntry entry
+        {
+            get { return _entry; }
+        }
+        private PwDatabase _database;
+        public PwDatabase database
+        {
+            get { return _database; }
+        }
+
+        //public PwEntryDatabase(ref PwEntry e, ref PwDatabase db)
+        public PwEntryDatabase(PwEntry e, PwDatabase db)
+        {
+            _entry = e;
+            _database = db;
         }
     }
 }
