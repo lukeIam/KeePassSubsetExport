@@ -303,7 +303,13 @@ namespace KeePassSubsetExport
                 }
                 else
                 {
-                    //Implement a way to copy title, url and maybe notes?
+                    //[WIP]Implement a way to copy title, url and maybe notes?
+                    peNew.Strings.Set(PwDefs.TitleField,
+                            entry.Strings.GetSafe(PwDefs.TitleField));
+                    peNew.Strings.Set(PwDefs.UrlField,
+                            entry.Strings.GetSafe(PwDefs.UrlField));
+                    //peNew.Strings.Set(PwDefs.NotesField,
+                    //        entry.Strings.GetSafe(PwDefs.NotesField));
                 }
 
                 peNew.Strings.Set(PwDefs.UserNameField,
