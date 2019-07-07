@@ -543,7 +543,7 @@ namespace KeePassSubsetExport
             }
             else
             {
-                MessageService.ShowWarning("Group not found in target database. OverrideEntireGroup will not work");
+                MessageService.ShowWarning("Group not found in target database. Is this the first time you make this export?");
             }
 
         }
