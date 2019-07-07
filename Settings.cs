@@ -1,4 +1,5 @@
-﻿using KeePassLib;
+﻿using System;
+using KeePassLib;
 using KeePassLib.Security;
 using KeePassLib.Utility;
 
@@ -65,6 +66,10 @@ namespace KeePassSubsetExport
         /// If true, the entire group of the target database will be overwritten (only works with <see cref="OverrideTargetDatabase"/> == false).
         /// </summary>
         public bool OverrideEntireGroup { get; private set; }
+        /// <summary>
+        /// If true, this export job will be ignored.
+        /// </summary>
+        public bool Disabled { get; private set; }
 
         // Private constructor
         private Settings()
@@ -120,7 +125,8 @@ namespace KeePassSubsetExport
                 OverrideEntireGroup = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntireGroup").ToLower().Trim() == "true",
                 Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry),
                 Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
-                Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry)
+                Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry),
+                Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime)
             };
         }
     }
