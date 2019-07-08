@@ -25,6 +25,8 @@ namespace KeePassSubsetExport
 
         private static readonly IOConnectionInfo ConnectionInfo = new IOConnectionInfo();
 
+        private static string currentJob = "";
+
         /// <summary>
         /// Exports all entries with the given tag to a new database at the given path (multiple jobs possible).
         /// Each job is an entry in the "SubsetExportSettings" folder with a title "SubsetExport_*".
@@ -49,6 +51,7 @@ namespace KeePassSubsetExport
             {
                 // Load settings for this job
                 var settings = Settings.Parse(settingsEntry, sourceDb);
+                currentJob = settingsEntry.Strings.GetSafe(PwDefs.TitleField).ReadString();
 
                 // Skip disabled/expired jobs
                 if (settings.Disabled)
@@ -543,7 +546,8 @@ namespace KeePassSubsetExport
             }
             else
             {
-                MessageService.ShowWarning("Group not found in target database. Is this the first time you make this export?");
+                MessageService.ShowWarning("Group not found in target database to apply OverrideEntireGroup for Job: "
+                    + currentJob +". Is this the first time you make this export?");
             }
 
         }
