@@ -55,7 +55,7 @@ namespace KeePassSubsetExport
         /// </summary>
         public bool FlatExport { get; private set; }
         /// <summary>
-        /// If true, the traget database will be overriden, otherwise the enries will added to the target database (optional, defaults to true).
+        /// If true, the target database will be overriden, otherwise the entries will added to the target database (optional, defaults to true).
         /// </summary>
         public bool OverrideTargetDatabase { get; private set; }
         /// <summary>

@@ -508,7 +508,7 @@ namespace KeePassSubsetExport
         /// <summary>
         /// Delete every entry in the target group.
         /// </summary>
-        /// <param name="sourceGroups">Collection for groups which counterparts should be deleted in the target database.</param>
+        /// <param name="sourceGroups">Collection of groups which counterparts should be deleted in the target database.</param>
         /// <param name="targetDatabase">The target database in which the folder structure should be created.</param>
         private static void DeleteTargetGroupsInDatabase(IEnumerable<PwGroup> sourceGroups, PwDatabase targetDatabase)
         {
