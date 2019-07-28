@@ -523,10 +523,6 @@ namespace KeePassSubsetExport
                 {
                     targetGroup.DeleteAllObjects(targetDatabase);
                 }
-                else
-                {
-                    MessageService.ShowWarning("Group not found in target database. OverrideEntireGroup will not work");
-                }
             }
         }
 
