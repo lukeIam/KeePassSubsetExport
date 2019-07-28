@@ -257,12 +257,11 @@ namespace KeePassSubsetExport
             if (!settings.OverrideTargetDatabase && !settings.FlatExport &&
                 settings.OverrideEntireGroup && !string.IsNullOrEmpty(settings.Group))
             {
-                //Delete every entry in target database' groups to everride them
-                foreach (PwEntry entry in entries)
-                {
-                    DeleteTargetGroupInDatebase(entry, targetDatabase);
-                }
+                //Delete every entry in target database' groups to override them
+                IEnumerable<PwGroup> groupsToDelete = entries.Select(x => x.ParentGroup).Distinct();
+                DeleteTargetGroupsInDatabase(groupsToDelete, targetDatabase);
             }
+
             foreach (PwEntry entry in entries)
             {
                 // Get or create the target group in the target database (including hierarchy)
@@ -491,7 +490,7 @@ namespace KeePassSubsetExport
                 // Get the source group
                 PwGroup sourceGroup = sourceDatabase.RootGroup.FindGroup(id, true);
 
-                // Create a new group and asign all properties from the source group
+                // Create a new group and assign all properties from the source group
                 newGroup = new PwGroup();
                 newGroup.AssignProperties(sourceGroup, false, true);
                 HandleCustomIcon(targetDatabase, sourceDatabase, sourceGroup);
@@ -509,25 +508,26 @@ namespace KeePassSubsetExport
         /// <summary>
         /// Delete every entry in the target group.
         /// </summary>
-        /// <param name="entry">An entry wich is located in the folder with the target structure.</param>
+        /// <param name="sourceGroups">Collection for groups which counterparts should be deleted in the target database.</param>
         /// <param name="targetDatabase">The target database in which the folder structure should be created.</param>
-        private static void DeleteTargetGroupInDatebase(PwEntry entry, PwDatabase targetDatabase)
+        private static void DeleteTargetGroupsInDatabase(IEnumerable<PwGroup> sourceGroups, PwDatabase targetDatabase)
         {
-            // Get the target group ID based on provided entry
-            PwGroup group = entry.ParentGroup;
-            PwUuid groupId = group.Uuid;
-            PwGroup targetGroup = targetDatabase.RootGroup.FindGroup(groupId, false);
-
-            // If group exists in target database, delete its entries, otherwise show a warning
-            if (targetGroup != null)
+            foreach (PwGroup sourceGroup in sourceGroups)
             {
-                targetGroup.DeleteAllObjects(targetDatabase);
-            }
-            else
-            {
-                MessageService.ShowWarning("Group not found in target database. OverrideEntireGroup will not work");
-            }
+                // Get the target group ID based
+                PwUuid groupId = sourceGroup.Uuid;
+                PwGroup targetGroup = targetDatabase.RootGroup.FindGroup(groupId, false);
 
+                // If group exists in target database, delete its entries, otherwise show a warning
+                if (targetGroup != null)
+                {
+                    targetGroup.DeleteAllObjects(targetDatabase);
+                }
+                else
+                {
+                    MessageService.ShowWarning("Group not found in target database. OverrideEntireGroup will not work");
+                }
+            }
         }
 
         /// <summary>
