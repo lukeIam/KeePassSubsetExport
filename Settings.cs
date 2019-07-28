@@ -1,4 +1,5 @@
-﻿using KeePassLib;
+﻿using System;
+using KeePassLib;
 using KeePassLib.Security;
 using KeePassLib.Utility;
 
@@ -61,6 +62,10 @@ namespace KeePassSubsetExport
         /// If true, only newer entries will overrides older entries (only works with <see cref="OverrideTargetDatabase"/> == false).
         /// </summary>
         public bool OverrideEntryOnlyNewer { get; private set; }
+        /// <summary>
+        /// If true, this export job will be ignored.
+        /// </summary>
+        public bool Disabled { get; private set; }
 
         // Private constructor
         private Settings()
@@ -115,7 +120,8 @@ namespace KeePassSubsetExport
                 OverrideEntryOnlyNewer = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntryOnlyNewer").ToLower().Trim() == "true",
                 Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry), 
                 Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
-                Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry)
+                Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry),
+                Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime)
             };
         }
     }

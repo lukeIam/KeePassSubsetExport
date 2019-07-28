@@ -49,6 +49,10 @@ namespace KeePassSubsetExport
                 // Load settings for this job
                 var settings = Settings.Parse(settingsEntry);
 
+                // Skip disabled/expired jobs
+                if (settings.Disabled)
+                    continue;
+
                 if (CheckKeyFile(sourceDb, settings, settingsEntry))
                     continue;
 
