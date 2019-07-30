@@ -55,13 +55,17 @@ namespace KeePassSubsetExport
         /// </summary>
         public bool FlatExport { get; private set; }
         /// <summary>
-        /// If true, the traget database will be overriden, otherwise the enries will added to the target database (optional, defaults to true).
+        /// If true, the target database will be overriden, otherwise the entries will added to the target database (optional, defaults to true).
         /// </summary>
         public bool OverrideTargetDatabase { get; private set; }
         /// <summary>
         /// If true, only newer entries will overrides older entries (only works with <see cref="OverrideTargetDatabase"/> == false).
         /// </summary>
         public bool OverrideEntryOnlyNewer { get; private set; }
+        /// <summary>
+        /// If true, the entire group of the target database will be overwritten (only works with <see cref="OverrideTargetDatabase"/> == false).
+        /// </summary>
+        public bool OverrideEntireGroup { get; private set; }
         /// <summary>
         /// If true, this export job will be ignored.
         /// </summary>
@@ -118,7 +122,8 @@ namespace KeePassSubsetExport
                 FlatExport = settingsEntry.Strings.ReadSafe("SubsetExport_FlatExport").ToLower().Trim() == "true",
                 OverrideTargetDatabase = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideTargetDatabase").ToLower().Trim() != "false",
                 OverrideEntryOnlyNewer = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntryOnlyNewer").ToLower().Trim() == "true",
-                Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry), 
+                OverrideEntireGroup = settingsEntry.Strings.ReadSafe("SubsetExport_OverrideEntireGroup").ToLower().Trim() == "true",
+                Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry),
                 Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
                 Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry),
                 Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime)
