@@ -9,7 +9,6 @@ using KeePassLib.Interfaces;
 using KeePassLib.Keys;
 using KeePassLib.Serialization;
 using KeePassLib.Utility;
-using KeePassLib.Security;
 
 namespace KeePassSubsetExport
 {
@@ -24,8 +23,6 @@ namespace KeePassSubsetExport
             0x91, 0xF7, 0xA9, 0xA4, 0x03, 0xE3, 0x0A, 0x0C });
 
         private static readonly IOConnectionInfo ConnectionInfo = new IOConnectionInfo();
-
-        private static string currentJob = "";
 
         /// <summary>
         /// Exports all entries with the given tag to a new database at the given path (multiple jobs possible).
@@ -51,7 +48,6 @@ namespace KeePassSubsetExport
             {
                 // Load settings for this job
                 var settings = Settings.Parse(settingsEntry, sourceDb);
-                currentJob = settingsEntry.Strings.GetSafe(PwDefs.TitleField).ReadString();
 
                 // Skip disabled/expired jobs
                 if (settings.Disabled)
@@ -304,20 +300,16 @@ namespace KeePassSubsetExport
                 {
                     peNew.AssignProperties(entry, false, true, true);
                 }
-                else
-                {
-                    //[WIP]Implement copy maybe notes?
-                    //peNew.Strings.Set(PwDefs.NotesField,
-                    //        entry.Strings.GetSafe(PwDefs.NotesField));
-                }
+                
+                // Copy/override some supported fields with ref resolving values
                 peNew.Strings.Set(PwDefs.TitleField,
-                    Settings.GetFieldWRef(entry, sourceDb, PwDefs.TitleField));
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.TitleField));
                 peNew.Strings.Set(PwDefs.UserNameField,
-                    Settings.GetFieldWRef(entry, sourceDb, PwDefs.UserNameField));
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UserNameField));
                 peNew.Strings.Set(PwDefs.PasswordField,
-                    Settings.GetFieldWRef(entry, sourceDb, PwDefs.PasswordField));
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.PasswordField));
                 peNew.Strings.Set(PwDefs.UrlField,
-                    Settings.GetFieldWRef(entry, sourceDb, PwDefs.UrlField));
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UrlField));
 
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);
@@ -544,12 +536,6 @@ namespace KeePassSubsetExport
             {
                 targetGroup.DeleteAllObjects(targetDatabase);
             }
-            else
-            {
-                MessageService.ShowWarning("Group not found in target database to apply OverrideEntireGroup for Job: "
-                    + currentJob +". Is this the first time you make this export?");
-            }
-
         }
 
         /// <summary>

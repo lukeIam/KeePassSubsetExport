@@ -2,12 +2,11 @@
 using KeePassLib;
 using KeePassLib.Security;
 using KeePassLib.Utility;
-using KeePass.Util.Spr;
 
 namespace KeePassSubsetExport
 {
     /// <summary>
-    /// Contais all settings for a job.
+    /// Contains all settings for a job.
     /// </summary>
     public class Settings
     {
@@ -56,7 +55,7 @@ namespace KeePassSubsetExport
         /// </summary>
         public bool FlatExport { get; private set; }
         /// <summary>
-        /// If true, the traget database will be overriden, otherwise the enries will added to the target database (optional, defaults to true).
+        /// If true, the target database will be overriden, otherwise the entries will added to the target database (optional, defaults to true).
         /// </summary>
         public bool OverrideTargetDatabase { get; private set; }
         /// <summary>
@@ -72,7 +71,7 @@ namespace KeePassSubsetExport
         /// </summary>
         public bool Disabled { get; private set; }
         /// <summary>
-        /// If true, Only Username and Password will be exported to the target Database.
+        /// If true, only Username and Password will be exported to the target database.
         /// </summary>
         public bool ExportUserAndPassOnly { get; private set; }
 
@@ -111,14 +110,13 @@ namespace KeePassSubsetExport
         /// Read all job settings from an entry.
         /// </summary>
         /// <param name="settingsEntry">The entry to read the settings from.</param>
+        /// <param name="sourceDb">A database to resolve refs in the password field.</param>
         /// <returns>A settings object containing all the settings for this job.</returns>
-        public static Settings Parse(PwEntry settingsEntry, PwDatabase sourceDb)
+        public static Settings Parse(PwEntry settingsEntry, PwDatabase sourceDb=null)
         {
-
             return new Settings()
             {
-                //Password = settingsEntry.Strings.GetSafe("Password"),
-                Password = GetFieldWRef(settingsEntry, sourceDb, PwDefs.PasswordField),
+                Password = FieldHelper.GetFieldWRef(settingsEntry, sourceDb, PwDefs.PasswordField),
                 TargetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath"),
                 KeyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath"),
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
@@ -136,27 +134,5 @@ namespace KeePassSubsetExport
                 ExportUserAndPassOnly = settingsEntry.Strings.ReadSafe("SubsetExport_ExportUserAndPassOnly").ToLower().Trim() == "true"
             };
         }
-
-        public static ProtectedString GetFieldWRef(PwEntry entry, PwDatabase sourceDb, string fieldName)
-            //Had to implement this fuction here, since Exporter is private
-        {
-            SprContext ctx = new SprContext(entry, sourceDb,
-                    SprCompileFlags.All, false, false);
-            return ProtectedString.EmptyEx.Insert(0, SprEngine.Compile(
-                    entry.Strings.ReadSafe(fieldName), ctx));
-            /* This next code is borrowed from KeePassHttps, I don't know what it does:
-            var f = (MethodInvoker)delegate
-            {
-                // apparently, SprEngine.Compile might modify the database
-                host.MainWindow.UpdateUI(false, null, false, null, false, null, false);
-            };
-            if (host.MainWindow.InvokeRequired)
-                host.MainWindow.Invoke(f);
-            else
-                f.Invoke();
-            */
-        }
-
     }
-    //No need for the class PwEntryDatabase
 }
