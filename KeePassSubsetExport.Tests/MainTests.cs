@@ -19,8 +19,19 @@ namespace KeePassSubsetExport.Tests
         {
             _settings = new TestSettings();
 
-            _settings.RootPath =
-                Path.GetDirectoryName(Path.GetDirectoryName(testContext.TestDir)) ??throw new InvalidOperationException();
+            // Check if test is running on AzureDevops
+            string azureDevOpsSourcePath = Environment.GetEnvironmentVariable("Build.Repository.LocalPath");            
+            if (!string.IsNullOrEmpty(azureDevOpsSourcePath) && Directory.Exists(azureDevOpsSourcePath))
+            {
+                // Running on AzureDevOps
+                _settings.RootPath = azureDevOpsSourcePath;
+            }
+            else
+            {
+                // Local test run
+                _settings.RootPath =
+                Path.GetDirectoryName(Path.GetDirectoryName(testContext.TestDir)) ?? throw new InvalidOperationException();
+            }            
 
             _settings.DbAFilesPath = Path.Combine(_settings.RootPath, @"TestDatabases\A\");
             _settings.DbBFilesPath = Path.Combine(_settings.RootPath, @"TestDatabases\B\");
