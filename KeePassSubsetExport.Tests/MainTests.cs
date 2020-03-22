@@ -20,11 +20,12 @@ namespace KeePassSubsetExport.Tests
             _settings = new TestSettings();
 
             // Check if test is running on AzureDevops
-            string azureDevOpsSourcePath = Environment.GetEnvironmentVariable("Build.Repository.LocalPath");            
+            string azureDevOpsSourcePath = Environment.GetEnvironmentVariable("System.DefaultWorkingDirectory");
+            Console.WriteLine("###System.DefaultWorkingDirectory: " + azureDevOpsSourcePath);
             if (!string.IsNullOrEmpty(azureDevOpsSourcePath) && Directory.Exists(azureDevOpsSourcePath))
             {
                 // Running on AzureDevOps
-                _settings.RootPath = Directory.GetParent(azureDevOpsSourcePath).Parent.FullName;
+                _settings.RootPath = azureDevOpsSourcePath;
             }
             else
             {
