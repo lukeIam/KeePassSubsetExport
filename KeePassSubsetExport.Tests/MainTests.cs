@@ -28,7 +28,7 @@ namespace KeePassSubsetExport.Tests
             if (testDirPath.Contains("_temp"))
             {
                 // Running on AzureDevOps
-                _settings.RootPath = Path.Combine(Directory.GetParent(testDirPath).Parent.Parent.FullName, @"\1\s\");
+                _settings.RootPath = Path.Combine(Directory.GetParent(testDirPath).Parent.FullName, @"\1\s\");
             }
             else
             {
