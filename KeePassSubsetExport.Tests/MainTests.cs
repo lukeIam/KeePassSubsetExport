@@ -24,7 +24,7 @@ namespace KeePassSubsetExport.Tests
             if (!string.IsNullOrEmpty(azureDevOpsSourcePath) && Directory.Exists(azureDevOpsSourcePath))
             {
                 // Running on AzureDevOps
-                _settings.RootPath = Directory.GetParent(azureDevOpsSourcePath).FullName;
+                _settings.RootPath = Directory.GetParent(azureDevOpsSourcePath).Parent.FullName;
             }
             else
             {
