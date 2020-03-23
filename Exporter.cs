@@ -298,6 +298,10 @@ namespace KeePassSubsetExport
                 if (!settings.ExportUserAndPassOnly)
                 {
                     peNew.AssignProperties(entry, false, true, true);
+                    peNew.Strings.Set(PwDefs.UrlField,
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UrlField));
+                    peNew.Strings.Set(PwDefs.NotesField,
+                        FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.NotesField));
                 }
 
                 // Copy/override some supported fields with ref resolving values
@@ -307,11 +311,7 @@ namespace KeePassSubsetExport
                     FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UserNameField));
                 peNew.Strings.Set(PwDefs.PasswordField,
                     FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.PasswordField));
-                peNew.Strings.Set(PwDefs.UrlField,
-                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UrlField));
-                peNew.Strings.Set(PwDefs.NotesField,
-                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.NotesField));
-
+                
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);
             }
