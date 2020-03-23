@@ -171,6 +171,36 @@ namespace KeePassSubsetExport.Tests
         }
 
         [TestMethod]
+        public void Ae8Test()
+        {
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae8RealData.Db), password: _settings.DbTestPw,
+                keyPath: _settings.KeyTestAPath);
+
+            var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae8RealData.Kdf);
+
+            CheckGroup(group, Ae8RealData.Data);
+
+            db.Close();
+        }
+
+        [TestMethod]
+        public void Ae9Test()
+        {
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae9RealData.Db), password: _settings.DbTestPw,
+                keyPath: _settings.KeyTestAPath);
+
+            var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae9RealData.Kdf);
+
+            CheckGroup(group, Ae9RealData.Data);
+
+            db.Close();
+        }
+
+        [TestMethod]
         public void Be1Test()
         {
             PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbBFilesPath, Be1RealData.Db), keyPath: _settings.KeyTestBPath);
@@ -232,6 +262,7 @@ namespace KeePassSubsetExport.Tests
             Assert.AreEqual(testEntryValues.UserName, entry.Strings.ReadSafe("UserName"));
             Assert.AreEqual(testEntryValues.Password, entry.Strings.ReadSafe("Password"));
             Assert.AreEqual(testEntryValues.Url, entry.Strings.ReadSafe("URL"));
+            Assert.AreEqual(testEntryValues.Note, entry.Strings.ReadSafe("Notes"));
         }
 
         private static void CheckKdf(KdfParameters param, TestKdfValues testEntryValues)
