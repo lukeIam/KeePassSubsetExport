@@ -213,68 +213,118 @@ namespace KeePassSubsetExport
 
         private static PwObjectList<PwEntry> GetMatching(PwDatabase sourceDb, Settings settings)
         {
-            PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
+            PwObjectList<PwEntry> entries;
 
             if (!string.IsNullOrEmpty(settings.Tag) && string.IsNullOrEmpty(settings.Group))
             {
                 // Tag only export
-                // Support multiple tag (Tag1,Tag2)
-                foreach (string tag in settings.Tag.Split(','))
+                // Support multiple tags (Tag1,Tag2)
+                entries = FindEntriesByTag(sourceDb, settings.Tag);
+            }
+            else if (string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
+            {
+                // Group only export
+                // Support multiple groups (Group1,Group2)
+                entries = FindEntriesByGroup(sourceDb, settings.Group);
+            }
+            else if (!string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
+            {
+                // Group and Tag export
+                // Support multiple groups (Group1,Group2)
+                // Support multiple tags (Tag1,Tag2)
+                entries = FindEntriesByGroupAndTag(sourceDb, settings.Group, settings.Tag);
+            }
+            else
+            {
+                throw new ArgumentException("At least one of Tag or ExportFolderName must be set.");
+            }
+
+            return entries;
+        }
+
+        /// <summary>
+        /// Finds all entries with a given group and tag (or multiple)
+        /// </summary>
+        /// <param name="sourceDb">Database to search for the entries.</param>
+        /// <param name="groups">Groups to search for (multiple separated by ,).</param>
+        /// <param name="tags">Tag to search for (multiple separated by ,).</param>
+        /// <returns>A PwObjectList with all metching entries.</returns>
+        private static PwObjectList<PwEntry> FindEntriesByGroupAndTag(PwDatabase sourceDb, string groups, string tags)
+        {
+            PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
+
+            // Tag and group export
+            foreach (string group in groups.Split(','))
+            {
+                PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
+
+                if (groupToExport == null)
+                {
+                    throw new ArgumentException("No group with the name of the Group-Setting found.");
+                }
+
+                foreach (string tag in tags.Split(','))
                 {
                     PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
-                    sourceDb.RootGroup.FindEntriesByTag(tag, tagEntries, true);
+                    groupToExport.FindEntriesByTag(tag, tagEntries, true);
                     // Prevent duplicated entries
                     IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
                     List<PwEntry> entriesToAdd = tagEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
                     entries.Add(entriesToAdd);
                 }
             }
-            else if (string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
-            {
-                // Support multiple group (Group1,Group2)
-                foreach (string group in settings.Group.Split(','))
-                {
-                    // Tag and group export
-                    PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
 
-                    if (groupToExport == null)
-                    {
-                        throw new ArgumentException("No group with the name of the Group-Setting found.");
-                    }
+            return entries;
+        }
 
-                    PwObjectList<PwEntry> groupEntries = groupToExport.GetEntries(true);
-                    // Prevent duplicated entries
-                    IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
-                    List<PwEntry> entriesToAdd = groupEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
-                    entries.Add(entriesToAdd);
-                }
-            }
-            else if (!string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
+        /// <summary>
+        /// Finds all entries with a given group (or multiple)
+        /// </summary>
+        /// <param name="sourceDb">Database to search for the entries.</param>
+        /// <param name="groups">Groups to search for (multiple separated by ,).</param>
+        /// <returns>A PwObjectList with all metching entries.</returns>
+        private static PwObjectList<PwEntry> FindEntriesByGroup(PwDatabase sourceDb, string groups)
+        {
+            PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
+
+            foreach (string group in groups.Split(','))
             {
                 // Tag and group export
-                foreach (string group in settings.Group.Split(','))
+                PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
+
+                if (groupToExport == null)
                 {
-                    PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
-
-                    if (groupToExport == null)
-                    {
-                        throw new ArgumentException("No group with the name of the Group-Setting found.");
-                    }
-
-                    foreach (string tag in settings.Tag.Split(','))
-                    {
-                        PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
-                        groupToExport.FindEntriesByTag(tag, tagEntries, true);
-                        // Prevent duplicated entries
-                        IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
-                        List<PwEntry> entriesToAdd = tagEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
-                        entries.Add(entriesToAdd);
-                    }
+                    throw new ArgumentException("No group with the name of the Group-Setting found.");
                 }
+
+                PwObjectList<PwEntry> groupEntries = groupToExport.GetEntries(true);
+                // Prevent duplicated entries
+                IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
+                List<PwEntry> entriesToAdd = groupEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
+                entries.Add(entriesToAdd);
             }
-            else
+
+            return entries;
+        }
+
+        /// <summary>
+        /// Finds all entries with a given tag (or multiple)
+        /// </summary>
+        /// <param name="sourceDb">Database to search for the entries.</param>
+        /// <param name="tags">Tag to search for (multiple separated by ,).</param>
+        /// <returns>A PwObjectList with all metching entries.</returns>
+        private static PwObjectList<PwEntry> FindEntriesByTag(PwDatabase sourceDb, string tags)
+        {
+            PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
+
+            foreach (string tag in tags.Split(','))
             {
-                throw new ArgumentException("At least one of Tag or ExportFolderName must be set.");
+                PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
+                sourceDb.RootGroup.FindEntriesByTag(tag, tagEntries, true);
+                // Prevent duplicated entries
+                IEnumerable<PwUuid> existingUuids = entries.Select(x => x.Uuid);
+                List<PwEntry> entriesToAdd = tagEntries.Where(x => !existingUuids.Contains(x.Uuid)).ToList();
+                entries.Add(entriesToAdd);
             }
 
             return entries;
