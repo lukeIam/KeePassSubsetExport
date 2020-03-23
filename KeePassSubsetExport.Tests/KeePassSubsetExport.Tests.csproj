@@ -51,6 +51,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComparisonData\Ae9RealData.cs" />
+    <Compile Include="ComparisonData\Ae8RealData.cs" />
     <Compile Include="ComparisonData\Ae7RealData.cs" />
     <Compile Include="ComparisonData\Ae4RealData.cs" />
     <Compile Include="ComparisonData\Ae5RealData.cs" />
@@ -59,7 +61,7 @@
     <Compile Include="ComparisonData\Be2RealData.cs" />
     <Compile Include="ComparisonData\Ae3RealData.cs" />
     <Compile Include="ComparisonData\Ae2RealData.cs" />
-    <Compile Include="ComparisonData\AE1RealData.cs" />
+    <Compile Include="ComparisonData\Ae1RealData.cs" />
     <Compile Include="DataContainer\TestKdfValues.cs" />
     <Compile Include="DataContainer\TestEntryValues.cs" />
     <Compile Include="DataContainer\TestGroupValues.cs" />

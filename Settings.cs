@@ -6,7 +6,7 @@ using KeePassLib.Utility;
 namespace KeePassSubsetExport
 {
     /// <summary>
-    /// Contais all settings for a job.
+    /// Contains all settings for a job.
     /// </summary>
     public class Settings
     {
@@ -70,6 +70,10 @@ namespace KeePassSubsetExport
         /// If true, this export job will be ignored.
         /// </summary>
         public bool Disabled { get; private set; }
+        /// <summary>
+        /// If true, only Username and Password will be exported to the target database.
+        /// </summary>
+        public bool ExportUserAndPassOnly { get; private set; }
 
         // Private constructor
         private Settings()
@@ -106,13 +110,13 @@ namespace KeePassSubsetExport
         /// Read all job settings from an entry.
         /// </summary>
         /// <param name="settingsEntry">The entry to read the settings from.</param>
+        /// <param name="sourceDb">A database to resolve refs in the password field.</param>
         /// <returns>A settings object containing all the settings for this job.</returns>
-        public static Settings Parse(PwEntry settingsEntry)
+        public static Settings Parse(PwEntry settingsEntry, PwDatabase sourceDb=null)
         {
-
             return new Settings()
             {
-                Password = settingsEntry.Strings.GetSafe("Password"),
+                Password = FieldHelper.GetFieldWRef(settingsEntry, sourceDb, PwDefs.PasswordField),
                 TargetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath"),
                 KeyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath"),
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
@@ -126,7 +130,8 @@ namespace KeePassSubsetExport
                 Argon2ParamIterations = GetUlongValue("SubsetExport_Argon2ParamIterations", settingsEntry),
                 Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
                 Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry),
-                Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime)
+                Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime),
+                ExportUserAndPassOnly = settingsEntry.Strings.ReadSafe("SubsetExport_ExportUserAndPassOnly").ToLower().Trim() == "true"
             };
         }
     }

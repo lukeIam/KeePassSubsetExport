@@ -99,7 +99,8 @@ namespace KeePassSubsetExport.Tests.ComparisonData
                                 Title = "A_G3_E1",
                                 UserName = "user",
                                 Password = "dummy",
-                                Url = "https://github.com/lukeIam/KeePassSubsetExport"
+                                Url = "https://github.com/lukeIam/KeePassSubsetExport",
+                                Note = "Note"
                             }
                         }
                     }

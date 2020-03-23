@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exporter.cs" />
+    <Compile Include="FieldHelper.cs" />
     <Compile Include="KeePassSubsetExportExt.cs" />
     <Compile Include="KeyHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

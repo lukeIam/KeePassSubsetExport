@@ -47,7 +47,7 @@ namespace KeePassSubsetExport
             foreach (var settingsEntry in jobSettings)
             {
                 // Load settings for this job
-                var settings = Settings.Parse(settingsEntry);
+                var settings = Settings.Parse(settingsEntry, sourceDb);
 
                 // Skip disabled/expired jobs
                 if (settings.Disabled)
@@ -324,9 +324,24 @@ namespace KeePassSubsetExport
                     targetGroup.AddEntry(peNew, true);
                 }
 
-                // Clone entry properties
-                peNew.AssignProperties(entry, false, true, true);
+                // Clone entry properties if ExportUserAndPassOnly is false
+                if (!settings.ExportUserAndPassOnly)
+                {
+                    peNew.AssignProperties(entry, false, true, true);
+                    peNew.Strings.Set(PwDefs.UrlField,
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UrlField));
+                    peNew.Strings.Set(PwDefs.NotesField,
+                        FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.NotesField));
+                }
 
+                // Copy/override some supported fields with ref resolving values
+                peNew.Strings.Set(PwDefs.TitleField,
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.TitleField));
+                peNew.Strings.Set(PwDefs.UserNameField,
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UserNameField));
+                peNew.Strings.Set(PwDefs.PasswordField,
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.PasswordField));
+                
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);
             }
@@ -555,7 +570,6 @@ namespace KeePassSubsetExport
                 }
             }
         }
-
         /// <summary>
         /// Copies the custom icons required for this group to the target database.
         /// </summary>
