@@ -51,6 +51,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComparisonData\Ae10RealData.cs" />
     <Compile Include="ComparisonData\Ae9RealData.cs" />
     <Compile Include="ComparisonData\Ae8RealData.cs" />
     <Compile Include="ComparisonData\Ae7RealData.cs" />

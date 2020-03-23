@@ -60,9 +60,14 @@ namespace KeePassSubsetExport.Tests
         {
             InitalizeSettings(testContext);
 
-            PwDatabase db = DbHelper.OpenDatabase(_settings.DbAPath, _settings.DbMainPw);
+            Environment.SetEnvironmentVariable("KeePassSubsetExport_Test_Ae10_TargetPath", Ae10RealData.Db);
+            Environment.SetEnvironmentVariable("KeePassSubsetExport_Test_Ae10_KeyPath", "A.key");
 
+            PwDatabase db = DbHelper.OpenDatabase(_settings.DbAPath, _settings.DbMainPw);            
             Exporter.Export(db);
+
+            Environment.SetEnvironmentVariable("KeePassSubsetExport_Test_Ae10_TargetPath", null);
+            Environment.SetEnvironmentVariable("KeePassSubsetExport_Test_Ae10_KeyPath", null);
 
             db.Close();
 
@@ -196,6 +201,21 @@ namespace KeePassSubsetExport.Tests
             CheckKdf(db.KdfParameters, Ae9RealData.Kdf);
 
             CheckGroup(group, Ae9RealData.Data);
+
+            db.Close();
+        }
+
+        [TestMethod]
+        public void Ae10Test()
+        {            
+            PwDatabase db = DbHelper.OpenDatabase(Path.Combine(_settings.DbAFilesPath, Ae10RealData.Db), password: _settings.DbTestPw,
+                keyPath: _settings.KeyTestAPath);
+
+            var group = db.RootGroup;
+
+            CheckKdf(db.KdfParameters, Ae10RealData.Kdf);
+
+            CheckGroup(group, Ae10RealData.Data);
 
             db.Close();
         }
