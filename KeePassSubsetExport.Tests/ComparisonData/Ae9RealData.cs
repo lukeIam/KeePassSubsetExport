@@ -23,7 +23,7 @@ namespace KeePassSubsetExport.Tests.ComparisonData
                     new TestGroupValues()
                     {
                         Uuid = "875668C19091E94CAA50D846132EFAD8",
-                        Name = "A_G4",
+                        Name = "A G4",
                         Entries = new List<TestEntryValues>()
                         {
                             new TestEntryValues()
@@ -34,6 +34,22 @@ namespace KeePassSubsetExport.Tests.ComparisonData
                                 Password = "dummy",
                                 Url = "",
                                 Note = ""
+                            }
+                        }
+                    },
+                    new TestGroupValues()
+                    {
+                        Uuid = "DDABC265A89D284792200CB7EE23F59E",
+                        Name = "A G5",
+                        Entries = new List<TestEntryValues>()
+                        {
+                            new TestEntryValues()
+                            {
+                                Uuid = "75D3341FFA2FE04284F21633065B3690",
+                                Title = "A_G5_E1",
+                                UserName = "user",
+                                Password = "dummy",
+                                Url = ""
                             }
                         }
                     }

@@ -254,7 +254,7 @@ namespace KeePassSubsetExport
             PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
 
             // Tag and group export
-            foreach (string group in groups.Split(','))
+            foreach (string group in groups.Split(',').Select(x => x.Trim()))
             {
                 PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
 
@@ -263,7 +263,7 @@ namespace KeePassSubsetExport
                     throw new ArgumentException("No group with the name of the Group-Setting found.");
                 }
 
-                foreach (string tag in tags.Split(','))
+                foreach (string tag in tags.Split(',').Select(x => x.Trim()))
                 {
                     PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
                     groupToExport.FindEntriesByTag(tag, tagEntries, true);
@@ -287,7 +287,7 @@ namespace KeePassSubsetExport
         {
             PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
 
-            foreach (string group in groups.Split(','))
+            foreach (string group in groups.Split(',').Select(x => x.Trim()))
             {
                 // Tag and group export
                 PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
@@ -317,7 +317,7 @@ namespace KeePassSubsetExport
         {
             PwObjectList<PwEntry> entries = new PwObjectList<PwEntry>();
 
-            foreach (string tag in tags.Split(','))
+            foreach (string tag in tags.Split(',').Select(x => x.Trim()))
             {
                 PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
                 sourceDb.RootGroup.FindEntriesByTag(tag, tagEntries, true);
