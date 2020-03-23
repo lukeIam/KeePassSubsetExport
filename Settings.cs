@@ -117,8 +117,8 @@ namespace KeePassSubsetExport
             return new Settings()
             {
                 Password = FieldHelper.GetFieldWRef(settingsEntry, sourceDb, PwDefs.PasswordField),
-                TargetFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_TargetFilePath"),
-                KeyFilePath = settingsEntry.Strings.ReadSafe("SubsetExport_KeyFilePath"),
+                TargetFilePath = FieldHelper.GetFieldWRefUnprotected(settingsEntry, sourceDb, "SubsetExport_TargetFilePath"),
+                KeyFilePath = FieldHelper.GetFieldWRefUnprotected(settingsEntry, sourceDb, "SubsetExport_KeyFilePath"),
                 Tag = settingsEntry.Strings.ReadSafe("SubsetExport_Tag"),
                 KeyTransformationRounds = GetUlongValue("SubsetExport_KeyTransformationRounds", settingsEntry),
                 RootGroupName = settingsEntry.Strings.ReadSafe("SubsetExport_RootGroupName"),

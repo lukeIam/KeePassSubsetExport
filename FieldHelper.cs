@@ -41,5 +41,23 @@ namespace KeePassSubsetExport
             return new ProtectedString(true, SprEngine.Compile(
                 orgValue.ReadString(), ctx));
         }
+
+        public static string GetFieldWRefUnprotected(PwEntry entry, PwDatabase sourceDb, string fieldName)
+        {
+            string orgValue = entry.Strings.ReadSafe(fieldName);            
+
+            // Check if the string begins with the ref marker or contains a %
+            if (!orgValue.StartsWith("{REF") && !orgValue.Contains("%"))
+            {
+                // The string is not a ref -> return the string directly
+                return orgValue;
+            }
+
+            SprContext ctx = new SprContext(entry, sourceDb,
+                SprCompileFlags.All, false, false);
+
+            // the string is a reference -> decode it and look it up
+            return SprEngine.Compile(orgValue, ctx);
+        }
     }
 }
