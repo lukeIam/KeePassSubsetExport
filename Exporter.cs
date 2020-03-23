@@ -219,7 +219,7 @@ namespace KeePassSubsetExport
             {
                 // Tag only export
                 // Support multiple tag (Tag1,Tag2)
-                foreach (string tag in settings.Tag.Split(','))
+                foreach (string tag in settings.Tag.Split(',').Select(x => x.Trim()))
                 {
                     PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
                     sourceDb.RootGroup.FindEntriesByTag(tag, tagEntries, true);
@@ -232,7 +232,7 @@ namespace KeePassSubsetExport
             else if (string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
             {
                 // Support multiple group (Group1,Group2)
-                foreach (string group in settings.Group.Split(','))
+                foreach (string group in settings.Group.Split(',').Select(x => x.Trim()))
                 {
                     // Tag and group export
                     PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
@@ -252,7 +252,7 @@ namespace KeePassSubsetExport
             else if (!string.IsNullOrEmpty(settings.Tag) && !string.IsNullOrEmpty(settings.Group))
             {
                 // Tag and group export
-                foreach (string group in settings.Group.Split(','))
+                foreach (string group in settings.Group.Split(',').Select(x => x.Trim()))
                 {
                     PwGroup groupToExport = sourceDb.RootGroup.GetFlatGroupList().FirstOrDefault(g => g.Name == group);
 
@@ -261,7 +261,7 @@ namespace KeePassSubsetExport
                         throw new ArgumentException("No group with the name of the Group-Setting found.");
                     }
 
-                    foreach (string tag in settings.Tag.Split(','))
+                    foreach (string tag in settings.Tag.Split(',').Select(x => x.Trim()))
                     {
                         PwObjectList<PwEntry> tagEntries = new PwObjectList<PwEntry>();
                         groupToExport.FindEntriesByTag(tag, tagEntries, true);
