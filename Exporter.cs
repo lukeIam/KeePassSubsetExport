@@ -36,7 +36,7 @@ namespace KeePassSubsetExport
         internal static void Export(PwDatabase sourceDb)
         {
             // Get all entries out of the group "SubsetExportSettings" which start with "SubsetExport_"
-            PwGroup settingsGroup = sourceDb.RootGroup.Groups.FirstOrDefault(g => g.Name == "SubsetExportSettings");
+            PwGroup settingsGroup = FindSettingsGroup(sourceDb);
             if (settingsGroup == null)
             {
                 return;
@@ -75,6 +75,36 @@ namespace KeePassSubsetExport
                     MessageService.ShowWarning("SubsetExport failed:", e);
                 }
             }
+        }
+
+        private static PwGroup FindSettingsGroup(PwDatabase sourceDb, string settingsGroupName = "SubsetExportSettings")
+        {
+            var settingsGroup = sourceDb.RootGroup.Groups.FirstOrDefault(g => g.Name == settingsGroupName);
+            if (settingsGroup != null)
+            {
+                return settingsGroup;
+            }
+
+            return FindGroupRecursive(sourceDb.RootGroup, settingsGroupName);
+        }
+
+        private static PwGroup FindGroupRecursive(PwGroup startGroup, string groupName)
+        {
+            if(startGroup.Name == groupName)
+            {
+                return startGroup;
+            }
+
+            foreach (PwGroup group in startGroup.Groups)
+            {
+                PwGroup result = FindGroupRecursive(group, groupName);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
         }
 
         private static bool CheckPasswordOrKeyfile(Settings settings, PwEntry settingsEntry)
