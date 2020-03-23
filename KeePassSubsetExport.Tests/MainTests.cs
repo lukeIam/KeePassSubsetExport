@@ -22,13 +22,13 @@ namespace KeePassSubsetExport.Tests
             
             string testDirPath = testContext.TestDir;
             Console.WriteLine("###testContext.TestDir: " + testContext.TestDir);
-            Console.WriteLine("###testContext.TestRunDirectory: " + testContext.TestRunDirectory);
+            Console.WriteLine("###Build.SourcesDirectory: " + Environment.GetEnvironmentVariable("Build.SourcesDirectory"));
 
             // Check if test is running on AzureDevops
             if (testDirPath.Contains("_temp"))
             {
                 // Running on AzureDevOps
-                _settings.RootPath = Path.Combine(Directory.GetParent(testDirPath).Parent.FullName, @"\1\s\");
+                _settings.RootPath = Path.Combine(Directory.GetParent(testDirPath).FullName, @"\1\s\");
             }
             else
             {
