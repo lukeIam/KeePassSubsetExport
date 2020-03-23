@@ -309,6 +309,8 @@ namespace KeePassSubsetExport
                     FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.PasswordField));
                 peNew.Strings.Set(PwDefs.UrlField,
                     FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UrlField));
+                peNew.Strings.Set(PwDefs.NotesField,
+                    FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.NotesField));
 
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);
