@@ -383,6 +383,13 @@ namespace KeePassSubsetExport
                     peNew.Strings.Set(PwDefs.NotesField,
                         FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.NotesField));
                 }
+                else
+                {
+                    // Copy visual stuff even if settings.ExportUserAndPassOnly is set
+                    peNew.IconId = entry.IconId;
+                    peNew.CustomIconUuid = entry.CustomIconUuid;
+                    peNew.BackgroundColor = entry.BackgroundColor;
+                }
 
                 // Copy/override some supported fields with ref resolving values
                 peNew.Strings.Set(PwDefs.TitleField,
