@@ -614,12 +614,9 @@ namespace KeePassSubsetExport
         /// <param name="targetDatabase">The target database in which the folder structure should be created.</param>
         private static void DeleteTargetGroupsInDatabase(IEnumerable<PwGroup> sourceGroups, PwDatabase targetDatabase)
         {
-            foreach (PwGroup sourceGroup in sourceGroups)
+            // Get the target groups ID based
+            foreach (PwGroup targetGroup in sourceGroups.Select(x => targetDatabase.RootGroup.FindGroup(x.Uuid, false)))
             {
-                // Get the target group ID based
-                PwUuid groupId = sourceGroup.Uuid;
-                PwGroup targetGroup = targetDatabase.RootGroup.FindGroup(groupId, false);
-
                 // If group exists in target database, delete its entries, otherwise show a warning
                 if (targetGroup != null)
                 {
