@@ -182,33 +182,37 @@ namespace KeePassSubsetExport
             // Create a key for the target database
             CompositeKey key = CreateCompositeKey(settings);
 
-            // Create or open the target database
-            PwDatabase targetDatabase = CreateTargetDatabase(sourceDb, settings, key);
+            // Trigger an export for multiple target dbs (as we could also write to en existing db coping is not an option)
+            foreach (string targetFilePathLoopVar in settings.TargetFilePath.Split(',')) {
+                string targetFilePath = targetFilePathLoopVar;
+                // Create or open the target database
+                PwDatabase targetDatabase = CreateTargetDatabase(sourceDb, settings, key, ref targetFilePath);
 
-            // Copy database settings
-            CopyDatabaseSettings(sourceDb, targetDatabase);
+                // Copy database settings
+                CopyDatabaseSettings(sourceDb, targetDatabase);
 
-            // Copy key derivation function parameters
-            CopyKdfSettings(sourceDb, settings, targetDatabase);
+                // Copy key derivation function parameters
+                CopyKdfSettings(sourceDb, settings, targetDatabase);
 
-            // Assign the properties of the source root group to the target root group
-            targetDatabase.RootGroup.AssignProperties(sourceDb.RootGroup, false, true);
-            HandleCustomIcon(targetDatabase, sourceDb, sourceDb.RootGroup);
+                // Assign the properties of the source root group to the target root group
+                targetDatabase.RootGroup.AssignProperties(sourceDb.RootGroup, false, true);
+                HandleCustomIcon(targetDatabase, sourceDb, sourceDb.RootGroup);
 
-            // Overwrite the root group name if requested
-            if (!string.IsNullOrEmpty(settings.RootGroupName))
-            {
-                targetDatabase.RootGroup.Name = settings.RootGroupName;
+                // Overwrite the root group name if requested
+                if (!string.IsNullOrEmpty(settings.RootGroupName))
+                {
+                    targetDatabase.RootGroup.Name = settings.RootGroupName;
+                }
+
+                // Find all entries matching the tag
+                PwObjectList<PwEntry> entries = GetMatching(sourceDb, settings);
+
+                // Copy all entries to the new database
+                CopyEntriesAndGroups(sourceDb, settings, entries, targetDatabase);
+
+                // Save new database
+                SaveTargetDatabase(targetFilePath, targetDatabase, settings.OverrideTargetDatabase);
             }
-
-            // Find all entries matching the tag
-            PwObjectList<PwEntry> entries = GetMatching(sourceDb, settings);
-
-            // Copy all entries to the new database
-            CopyEntriesAndGroups(sourceDb, settings, entries, targetDatabase);
-
-            // Save new database
-            SaveTargetDatabase(settings, targetDatabase);
         }
 
         private static PwObjectList<PwEntry> GetMatching(PwDatabase sourceDb, Settings settings)
@@ -383,6 +387,13 @@ namespace KeePassSubsetExport
                     peNew.Strings.Set(PwDefs.NotesField,
                         FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.NotesField));
                 }
+                else
+                {
+                    // Copy visual stuff even if settings.ExportUserAndPassOnly is set
+                    peNew.IconId = entry.IconId;
+                    peNew.CustomIconUuid = entry.CustomIconUuid;
+                    peNew.BackgroundColor = entry.BackgroundColor;
+                }
 
                 // Copy/override some supported fields with ref resolving values
                 peNew.Strings.Set(PwDefs.TitleField,
@@ -397,9 +408,9 @@ namespace KeePassSubsetExport
             }
         }
 
-        private static void SaveTargetDatabase(Settings settings, PwDatabase targetDatabase)
+        private static void SaveTargetDatabase(string targetFilePath, PwDatabase targetDatabase, bool overrideTargetDatabase)
         {
-            if (!settings.OverrideTargetDatabase && File.Exists(settings.TargetFilePath))
+            if (!overrideTargetDatabase && File.Exists(targetFilePath))
             {
                 // Save changes to existing target database
                 targetDatabase.Save(new NullStatusLogger());
@@ -407,7 +418,7 @@ namespace KeePassSubsetExport
             else
             {
                 // Create target folder (if not exist)
-                string targetFolder = Path.GetDirectoryName(settings.TargetFilePath);
+                string targetFolder = Path.GetDirectoryName(targetFilePath);
 
                 if (targetFolder == null)
                 {
@@ -419,7 +430,7 @@ namespace KeePassSubsetExport
                 // Save the new database under the target path
                 KdbxFile kdbx = new KdbxFile(targetDatabase);
 
-                using (FileStream outputStream = new FileStream(settings.TargetFilePath, FileMode.Create))
+                using (FileStream outputStream = new FileStream(targetFilePath, FileMode.Create))
                 {
                     kdbx.Save(outputStream, null, KdbxFormat.Default, new NullStatusLogger());
                 }
@@ -484,27 +495,27 @@ namespace KeePassSubsetExport
             targetDatabase.RecycleBinEnabled = sourceDb.RecycleBinEnabled;
         }
 
-        private static PwDatabase CreateTargetDatabase(PwDatabase sourceDb, Settings settings, CompositeKey key)
+        private static PwDatabase CreateTargetDatabase(PwDatabase sourceDb, Settings settings, CompositeKey key, ref string targetFilePath)
         {
             // Default to same folder as sourceDb for target if no directory is specified
-            if (!Path.IsPathRooted(settings.TargetFilePath))
+            if (!Path.IsPathRooted(targetFilePath))
             {
                 string sourceDbPath = Path.GetDirectoryName(sourceDb.IOConnectionInfo.Path);
                 if (sourceDbPath != null)
                 {
-                    settings.TargetFilePath = Path.Combine(sourceDbPath, settings.TargetFilePath);
+                    targetFilePath = Path.Combine(sourceDbPath, targetFilePath);
                 }
             }
 
             // Create a new database 
             PwDatabase targetDatabase = new PwDatabase();
 
-            if (!settings.OverrideTargetDatabase && File.Exists(settings.TargetFilePath))
+            if (!settings.OverrideTargetDatabase && File.Exists(targetFilePath))
             {
                 // Connect the database object to the existing database
                 targetDatabase.Open(new IOConnectionInfo()
                 {
-                    Path = settings.TargetFilePath
+                    Path = targetFilePath
                 }, key, new NullStatusLogger());
             }
             else
@@ -607,12 +618,9 @@ namespace KeePassSubsetExport
         /// <param name="targetDatabase">The target database in which the folder structure should be created.</param>
         private static void DeleteTargetGroupsInDatabase(IEnumerable<PwGroup> sourceGroups, PwDatabase targetDatabase)
         {
-            foreach (PwGroup sourceGroup in sourceGroups)
+            // Get the target groups ID based
+            foreach (PwGroup targetGroup in sourceGroups.Select(x => targetDatabase.RootGroup.FindGroup(x.Uuid, false)))
             {
-                // Get the target group ID based
-                PwUuid groupId = sourceGroup.Uuid;
-                PwGroup targetGroup = targetDatabase.RootGroup.FindGroup(groupId, false);
-
                 // If group exists in target database, delete its entries, otherwise show a warning
                 if (targetGroup != null)
                 {
