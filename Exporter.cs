@@ -90,7 +90,7 @@ namespace KeePassSubsetExport
 
         private static PwGroup FindGroupRecursive(PwGroup startGroup, string groupName)
         {
-            if(startGroup.Name == groupName)
+            if (startGroup.Name == groupName)
             {
                 return startGroup;
             }
@@ -183,13 +183,17 @@ namespace KeePassSubsetExport
             CompositeKey key = CreateCompositeKey(settings);
 
             // Trigger an export for multiple target dbs (as we could also write to en existing db coping is not an option)
-            foreach (string targetFilePathLoopVar in settings.TargetFilePath.Split(',')) {
+            foreach (string targetFilePathLoopVar in settings.TargetFilePath.Split(','))
+            {
                 string targetFilePath = targetFilePathLoopVar;
                 // Create or open the target database
                 PwDatabase targetDatabase = CreateTargetDatabase(sourceDb, settings, key, ref targetFilePath);
 
-                // Copy database settings
-                CopyDatabaseSettings(sourceDb, targetDatabase);
+                if (settings.ExportDatebaseSettings)
+                {
+                    // Copy database settings
+                    CopyDatabaseSettings(sourceDb, targetDatabase);
+                }
 
                 // Copy key derivation function parameters
                 CopyKdfSettings(sourceDb, settings, targetDatabase);
@@ -402,7 +406,7 @@ namespace KeePassSubsetExport
                     FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.UserNameField));
                 peNew.Strings.Set(PwDefs.PasswordField,
                     FieldHelper.GetFieldWRef(entry, sourceDb, PwDefs.PasswordField));
-                
+
                 // Handle custom icon
                 HandleCustomIcon(targetDatabase, sourceDb, entry);
             }
