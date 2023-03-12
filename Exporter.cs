@@ -9,6 +9,7 @@ using KeePassLib.Interfaces;
 using KeePassLib.Keys;
 using KeePassLib.Serialization;
 using KeePassLib.Utility;
+using System.Text.RegularExpressions;
 
 namespace KeePassSubsetExport
 {
@@ -414,30 +415,50 @@ namespace KeePassSubsetExport
 
         private static void SaveTargetDatabase(string targetFilePath, PwDatabase targetDatabase, bool overrideTargetDatabase)
         {
-            if (!overrideTargetDatabase && File.Exists(targetFilePath))
+            Regex rg = new Regex(@".+://.+");
+            if (!rg.IsMatch(targetFilePath))
             {
-                // Save changes to existing target database
-                targetDatabase.Save(new NullStatusLogger());
+                // local file path
+                if (!overrideTargetDatabase && File.Exists(targetFilePath))
+                {
+                    // Save changes to existing target database
+                    targetDatabase.Save(new NullStatusLogger());
+                }
+                else
+                {
+                    // Create target folder (if not exist)
+                    string targetFolder = Path.GetDirectoryName(targetFilePath);
+
+                    if (targetFolder == null)
+                    {
+                        throw new ArgumentException("Can't get target folder.");
+                    }
+
+                    Directory.CreateDirectory(targetFolder);
+
+                    // Save the new database under the target path
+                    KdbxFile kdbx = new KdbxFile(targetDatabase);
+
+                    using (FileStream outputStream = new FileStream(targetFilePath, FileMode.Create))
+                    {
+                        kdbx.Save(outputStream, null, KdbxFormat.Default, new NullStatusLogger());
+                    }
+                }
             }
             else
             {
-                // Create target folder (if not exist)
-                string targetFolder = Path.GetDirectoryName(targetFilePath);
-
-                if (targetFolder == null)
+                // Non local file (ftp, webdav, ...)
+                Uri targetUrl = new Uri(targetFilePath);
+                string[] userAndPw = targetUrl.UserInfo.Split(':');
+                IOConnectionInfo conInfo = new IOConnectionInfo
                 {
-                    throw new ArgumentException("Can't get target folder.");
-                }
+                    Path = Regex.Replace(targetUrl.AbsoluteUri, @"(?<=//)[^@]+@", ""),
+                    CredSaveMode = IOCredSaveMode.NoSave,
+                    UserName = userAndPw[0],
+                    Password = userAndPw[1]
+                };
 
-                Directory.CreateDirectory(targetFolder);
-
-                // Save the new database under the target path
-                KdbxFile kdbx = new KdbxFile(targetDatabase);
-
-                using (FileStream outputStream = new FileStream(targetFilePath, FileMode.Create))
-                {
-                    kdbx.Save(outputStream, null, KdbxFormat.Default, new NullStatusLogger());
-                }
+                targetDatabase.SaveAs(conInfo, false, new NullStatusLogger());
             }
         }
 
@@ -501,6 +522,19 @@ namespace KeePassSubsetExport
 
         private static PwDatabase CreateTargetDatabase(PwDatabase sourceDb, Settings settings, CompositeKey key, ref string targetFilePath)
         {
+            Regex rg = new Regex(@".+://.+");
+            if (rg.IsMatch(targetFilePath))
+            {
+                // Non local file (ftp, webdav, ...)
+                // Create a new database 
+                PwDatabase targetDatabaseForUri = new PwDatabase();
+
+                // Apply the created key to the new database
+                targetDatabaseForUri.New(new IOConnectionInfo(), key);
+
+                return targetDatabaseForUri;
+            }
+
             // Default to same folder as sourceDb for target if no directory is specified
             if (!Path.IsPathRooted(targetFilePath))
             {
