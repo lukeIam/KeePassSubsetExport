@@ -74,6 +74,10 @@ namespace KeePassSubsetExport
         /// If true, only Username and Password will be exported to the target database.
         /// </summary>
         public bool ExportUserAndPassOnly { get; private set; }
+        /// <summary>
+        /// If true, the settings of the source database will be exported to the target database.
+        /// </summary>
+        public bool ExportDatebaseSettings { get; private set; }
 
         // Private constructor
         private Settings()
@@ -112,7 +116,7 @@ namespace KeePassSubsetExport
         /// <param name="settingsEntry">The entry to read the settings from.</param>
         /// <param name="sourceDb">A database to resolve refs in the password field.</param>
         /// <returns>A settings object containing all the settings for this job.</returns>
-        public static Settings Parse(PwEntry settingsEntry, PwDatabase sourceDb=null)
+        public static Settings Parse(PwEntry settingsEntry, PwDatabase sourceDb = null)
         {
             return new Settings()
             {
@@ -131,7 +135,8 @@ namespace KeePassSubsetExport
                 Argon2ParamMemory = GetUlongValue("SubsetExport_Argon2ParamMemory", settingsEntry),
                 Argon2ParamParallelism = GetUIntValue("SubsetExport_Argon2ParamParallelism", settingsEntry),
                 Disabled = (settingsEntry.Expires && DateTime.Now > settingsEntry.ExpiryTime),
-                ExportUserAndPassOnly = settingsEntry.Strings.ReadSafe("SubsetExport_ExportUserAndPassOnly").ToLower().Trim() == "true"
+                ExportUserAndPassOnly = settingsEntry.Strings.ReadSafe("SubsetExport_ExportUserAndPassOnly").ToLower().Trim() == "true",
+                ExportDatebaseSettings = settingsEntry.Strings.ReadSafe("SubsetExport_ExportDatebaseSettings").ToLower().Trim() != "false",
             };
         }
     }
