@@ -415,7 +415,7 @@ namespace KeePassSubsetExport
 
         private static void SaveTargetDatabase(string targetFilePath, PwDatabase targetDatabase, bool overrideTargetDatabase)
         {
-            Regex rg = new Regex(@".+://.+");
+            Regex rg = new Regex(@".+://.+", RegexOptions.None, TimeSpan.FromMilliseconds(200));
             if (!rg.IsMatch(targetFilePath))
             {
                 // local file path
@@ -452,7 +452,7 @@ namespace KeePassSubsetExport
                 string[] userAndPw = targetUrl.UserInfo.Split(':');
                 IOConnectionInfo conInfo = new IOConnectionInfo
                 {
-                    Path = Regex.Replace(targetUrl.AbsoluteUri, @"(?<=//)[^@]+@", ""),
+                    Path = Regex.Replace(targetUrl.AbsoluteUri, @"(?<=//)[^@]+@", "", RegexOptions.None, TimeSpan.FromMilliseconds(200)),
                     CredSaveMode = IOCredSaveMode.NoSave,
                     UserName = userAndPw[0],
                     Password = userAndPw[1]
@@ -522,7 +522,7 @@ namespace KeePassSubsetExport
 
         private static PwDatabase CreateTargetDatabase(PwDatabase sourceDb, Settings settings, CompositeKey key, ref string targetFilePath)
         {
-            Regex rg = new Regex(@".+://.+");
+            Regex rg = new Regex(@".+://.+", RegexOptions.None, TimeSpan.FromMilliseconds(200));
             if (rg.IsMatch(targetFilePath))
             {
                 // Non local file (ftp, webdav, ...)
